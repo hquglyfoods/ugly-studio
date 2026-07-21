@@ -36,7 +36,7 @@ Push notifications
 - `SUPABASE_URL`         same project URL
 - `SUPABASE_SERVICE_KEY` the service_role key (server only, never in the front end)
 - `VAPID_PUBLIC_KEY`     see VAPID_PRIVATE_KEY.pem note below
-- `VAPID_PRIVATE_KEY`    paste the full contents of VAPID_PRIVATE_KEY.pem
+- `VAPID_PRIVATE_KEY`    single-line key from VAPID_PRIVATE_KEY.txt (no newlines): BPgJMFS8TBBtVUe4JB6UL40v8OdUBoMuYe3mLdAzmMs
 - `VAPID_SUBJECT`        mailto:hq@uglydonutsncorndogs.com (optional)
 
 VAPID_PUBLIC_KEY value:

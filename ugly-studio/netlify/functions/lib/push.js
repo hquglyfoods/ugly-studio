@@ -36,14 +36,26 @@ function encrypt(uaPublic, uaAuth, payload) {
   return Buffer.concat([header, enc]);
 }
 
+// Build an EC private KeyObject from either a PEM or a single-line base64url d value.
+function toPrivateKey(privateKey, publicKey) {
+  if (typeof privateKey === "string" && privateKey.includes("BEGIN")) {
+    return crypto.createPrivateKey(privateKey); // PEM
+  }
+  // raw base64url d + public point (0x04 || x || y) -> JWK
+  const point = unb64u(publicKey);
+  const x = b64u(point.slice(1, 33)), y = b64u(point.slice(33, 65));
+  return crypto.createPrivateKey({ key: { kty: "EC", crv: "P-256", d: privateKey, x, y }, format: "jwk" });
+}
+
 // VAPID Authorization header for an endpoint origin
-function vapidHeader(endpoint, publicKey, privateKeyPem, subject) {
+function vapidHeader(endpoint, publicKey, privateKey, subject) {
   const url = new URL(endpoint);
   const aud = `${url.protocol}//${url.host}`;
   const header = b64u(JSON.stringify({ typ: "JWT", alg: "ES256" }));
   const body = b64u(JSON.stringify({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: subject || "mailto:hq@uglydonutsncorndogs.com" }));
   const signingInput = `${header}.${body}`;
-  const sig = crypto.sign("sha256", Buffer.from(signingInput), { key: privateKeyPem, dsaEncoding: "ieee-p1363" });
+  const key = toPrivateKey(privateKey, publicKey);
+  const sig = crypto.sign("sha256", Buffer.from(signingInput), { key, dsaEncoding: "ieee-p1363" });
   const jwt = `${signingInput}.${b64u(sig)}`;
   return `vapid t=${jwt}, k=${publicKey}`;
 }
