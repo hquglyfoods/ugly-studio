@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Ugly Studio</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#FBF7EF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ugly Studio">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FBF7EF; --paper:#FFFFFF; --gold:#EABF70; --gold-deep:#C8922E;
+  --brick:#B23A2E; --brick-deep:#8F2D24; --ink:#1A1512; --ink-soft:#3B342C;
+  --muted:#6E6559; --muted2:#9C9284; --line:#E7DECB; --line2:#DAD0BB;
+  --ok:#3E7D57; --shadow:0 1px 2px rgba(40,30,15,.05),0 8px 24px rgba(40,30,15,.05);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--cream);color:var(--ink);font-size:14px;-webkit-font-smoothing:antialiased;}
+.serif{font-family:'Fraunces','Playfair Display',Georgia,serif;}
+button{font-family:inherit;cursor:pointer;}
+input,textarea,select{font-family:inherit;}
+::selection{background:var(--gold);color:var(--ink);}
+img{display:block;}
+
+/* buttons */
+.btn{border:none;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:600;letter-spacing:.01em;transition:transform .06s ease,box-shadow .15s ease,background .15s ease;}
+.btn:active{transform:translateY(1px);}
+.btn-gold{background:var(--ink);color:var(--gold);}
+.btn-gold:hover{background:#241d17;}
+.btn-brick{background:var(--brick);color:#fff;}
+.btn-brick:hover{background:var(--brick-deep);}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line2);}
+.btn-ghost:hover{background:#fff;border-color:var(--gold-deep);}
+.btn-sm{padding:7px 12px;font-size:12px;border-radius:8px;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+
+/* inputs */
+.fld{width:100%;background:var(--paper);border:1px solid var(--line2);border-radius:10px;padding:11px 13px;font-size:14px;color:var(--ink);outline:none;transition:border-color .15s;}
+.fld:focus{border-color:var(--gold-deep);}
+textarea.fld{resize:vertical;line-height:1.55;}
+label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:7px;}
+
+/* ===== AUTH ===== */
+.auth{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(120% 120% at 50% -10%, #fff 0%, var(--cream) 55%);}
+.auth-card{width:380px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:38px 34px;box-shadow:var(--shadow);text-align:center;}
+.auth-mark{width:76px;height:76px;object-fit:contain;margin:0 auto 14px;}
+.auth-title{font-size:24px;font-weight:600;letter-spacing:-.01em;}
+.auth-sub{color:var(--muted);font-size:12.5px;margin:4px 0 26px;}
+.auth-card .lbl{text-align:left;}
+.auth-card input{margin-bottom:14px;}
+.auth-err{color:var(--brick);font-size:12.5px;margin-top:12px;min-height:16px;}
+
+/* ===== SHELL ===== */
+.shell{display:flex;min-height:100vh;}
+.rail{width:230px;flex-shrink:0;background:var(--paper);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;}
+.rail-top{padding:22px 22px 16px;display:flex;align-items:center;gap:11px;border-bottom:1px solid var(--line);}
+.rail-top img{width:38px;height:38px;object-fit:contain;}
+.rail-top .rt-name{font-size:16px;font-weight:600;line-height:1;}
+.rail-top .rt-sub{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-deep);font-weight:700;margin-top:3px;}
+.nav{padding:14px 12px;display:flex;flex-direction:column;gap:2px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;color:var(--ink-soft);
+  font-size:13.5px;font-weight:500;background:none;border:none;text-align:left;width:100%;transition:background .12s,color .12s;}
+.nav-item:hover{background:var(--cream);}
+.nav-item.on{background:var(--ink);color:var(--gold);font-weight:600;}
+.nav-item .ic{width:18px;text-align:center;font-size:15px;}
+.rail-foot{padding:14px 18px;border-top:1px solid var(--line);}
+.rail-foot .who{font-size:11.5px;color:var(--muted);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mode-chip{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:3px 8px;border-radius:20px;margin-bottom:10px;}
+.mode-live{background:#EAF5EE;color:var(--ok);}
+.mode-local{background:#FBEFE0;color:var(--gold-deep);}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+/* brand context bar: the brand is always in the room */
+.ctxbar{display:flex;align-items:center;gap:16px;padding:12px 30px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;}
+.ctx-tag{font-family:'Fraunces',serif;font-style:italic;font-size:15px;color:var(--ink);}
+.ctx-dots{display:flex;gap:5px;margin-left:auto;}
+.ctx-dots span{width:15px;height:15px;border-radius:50%;border:1px solid rgba(0,0,0,.08);}
+.wrap{padding:30px;max-width:1180px;width:100%;}
+.page-h{font-size:27px;font-weight:600;letter-spacing:-.015em;}
+.page-sub{color:var(--muted);font-size:13.5px;margin-top:5px;margin-bottom:26px;max-width:640px;line-height:1.5;}
+
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:var(--shadow);}
+.card + .card{margin-top:18px;}
+.card-h{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:14px;}
+
+/* palette */
+.pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.sw{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;}
+.sw-chip{height:66px;}
+.sw-body{padding:10px 12px;}
+.sw-name{font-weight:600;font-size:13px;}
+.sw-hex{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;text-transform:uppercase;}
+.sw-role{font-size:11px;color:var(--muted2);margin-top:4px;line-height:1.35;}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.dolist{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.dolist li{display:flex;gap:9px;font-size:13px;line-height:1.45;color:var(--ink-soft);}
+.dolist .mk{flex-shrink:0;font-weight:700;}
+.do .mk{color:var(--ok);}
+.dont .mk{color:var(--brick);}
+
+/* library */
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line2);background:#fff;font-size:12px;font-weight:500;color:var(--muted);}
+.chip.on{background:var(--ink);color:var(--gold);border-color:var(--ink);font-weight:600;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;}
+.tile{background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;}
+.tile-img{aspect-ratio:4/5;background:var(--cream) center/cover no-repeat;position:relative;}
+.tile-kind{position:absolute;top:9px;left:9px;background:rgba(26,21,18,.82);color:#fff;font-size:10px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:6px;}
+.tile-body{padding:12px 13px;flex:1;display:flex;flex-direction:column;gap:7px;}
+.tile-title{font-weight:600;font-size:13.5px;line-height:1.25;}
+.tile-an{font-size:11.5px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.tile-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:auto;}
+.ttag{font-size:10px;background:var(--cream);color:var(--muted);padding:2px 7px;border-radius:5px;}
+.empty{text-align:center;padding:60px 20px;color:var(--muted);border:1.5px dashed var(--line2);border-radius:16px;background:#fff;}
+.empty .em-ic{font-size:34px;margin-bottom:10px;}
+.lweight{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;letter-spacing:.03em;
+  padding:4px 9px;border-radius:20px;background:#FBEFE0;color:var(--gold-deep);white-space:nowrap;}
+/* studio feedback */
+.fb{margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;}
+.fb-h{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.applied{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--gold-deep);
+  background:#FBEFE0;padding:4px 10px;border-radius:20px;margin-left:auto;}
+.learned-toast{margin-top:10px;font-size:12.5px;color:var(--ok);background:#EAF5EE;border-radius:9px;padding:9px 12px;line-height:1.45;}
+
+/* studio */
+.crew{display:flex;gap:14px;align-items:stretch;margin-bottom:22px;}
+.crew-card{flex:1;background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px 16px;box-shadow:var(--shadow);}
+.crew-role{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--gold-deep);}
+.crew-who{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin:3px 0 5px;}
+.crew-does{font-size:11.5px;color:var(--muted);line-height:1.4;}
+.crew-arrow{align-self:center;color:var(--gold-deep);font-size:20px;flex-shrink:0;}
+.crew-card .badge{display:inline-block;margin-top:9px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--cream);color:var(--muted);}
+.crew-card.busy .badge{background:#FBEFE0;color:var(--gold-deep);}
+.crew-card.done .badge{background:#EAF5EE;color:var(--ok);}
+
+.tasks{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.task{padding:9px 14px;border-radius:10px;border:1px solid var(--line2);background:#fff;font-size:12.5px;font-weight:500;color:var(--ink-soft);}
+.task.on{background:var(--brick);color:#fff;border-color:var(--brick);font-weight:600;}
+
+.director{background:var(--cream);border:1px solid var(--line);border-radius:13px;padding:18px 20px;margin-top:16px;}
+.dir-k{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:4px;}
+.dir-block+.dir-block{margin-top:13px;}
+.dir-head{font-family:'Fraunces',serif;font-size:22px;font-weight:600;line-height:1.2;}
+.dir-sub{font-size:14px;color:var(--ink-soft);margin-top:3px;}
+.dir-body{font-size:13px;color:var(--ink-soft);line-height:1.5;white-space:pre-wrap;}
+.dir-cta{display:inline-block;background:var(--ink);color:var(--gold);font-weight:600;font-size:12px;padding:6px 13px;border-radius:8px;margin-top:4px;}
+
+.result{margin-top:16px;display:grid;grid-template-columns:1fr;gap:14px;}
+.result img{width:100%;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(0,0,0,.15);border-top-color:var(--ink);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:7px;}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.hist{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:8px;}
+.hist img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;border:1px solid var(--line);}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.spacer{flex:1;}
+.mut{color:var(--muted);font-size:12.5px;}
+.hidden{display:none;}
+@media(max-width:820px){
+  .rail{position:fixed;z-index:40;transform:translateX(-100%);transition:transform .2s;}
+  .rail.open{transform:none;}
+  .two{grid-template-columns:1fr;} .crew{flex-direction:column;} .crew-arrow{transform:rotate(90deg);}
+  .wrap{padding:20px 16px;} .ctxbar{padding:12px 16px;}
+}
+.burger{display:none;}
+@media(max-width:820px){.burger{display:inline-flex;}}
+
+/* ===== BOOT SPLASH (pre-React) ===== */
+.boot-splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--cream);z-index:200;}
+.boot-splash img{width:82px;height:82px;object-fit:contain;}
+.boot-spinner{width:24px;height:24px;border-radius:50%;border:3px solid rgba(200,146,46,.2);border-top-color:var(--gold-deep);animation:sp .8s linear infinite;}
+.boot-name{font-family:'Fraunces',serif;font-size:15px;color:var(--muted);font-weight:600;letter-spacing:.02em;}
+
+/* ===== ERROR CARD ===== */
+.crash{max-width:440px;margin:14vh auto;padding:28px;text-align:center;}
+.crash h2{font-family:'Fraunces',serif;font-size:22px;margin-bottom:8px;}
+.crash p{color:var(--muted);font-size:13.5px;line-height:1.5;margin-bottom:16px;}
+
+/* ===== iOS: 16px inputs on mobile so focus never zooms ===== */
+@media(max-width:820px){
+  input,select,textarea,.fld{font-size:16px !important;}
+}
+
+/* ===== APP / ALERTS banners ===== */
+.banner{margin:0 30px 0;margin-top:14px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);}
+.banner .bi{font-size:20px;}
+.banner .bt{flex:1;font-size:12.5px;color:var(--ink-soft);line-height:1.4;}
+.banner .bt b{color:var(--ink);}
+@media(max-width:820px){.banner{margin-left:16px;margin-right:16px;}}
+
+/* ===== AI CHAT: FAB + bottom sheet ===== */
+.fab{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));width:54px;height:54px;border-radius:999px;
+  background:var(--brick);color:#fff;border:none;font-size:22px;box-shadow:0 8px 22px rgba(178,58,46,.36);z-index:60;
+  display:flex;align-items:center;justify-content:center;}
+.fab:active{transform:scale(.96);}
+.sheet-bg{position:fixed;inset:0;background:rgba(33,28,22,.42);z-index:90;display:flex;flex-direction:column;justify-content:flex-end;}
+.sheet{background:var(--paper);border-radius:18px 18px 0 0;display:flex;flex-direction:column;height:88vh;max-height:88vh;box-shadow:0 -8px 40px rgba(0,0,0,.22);}
+.sheet-head{display:flex;align-items:center;gap:10px;padding:15px 16px 12px;border-bottom:1px solid var(--line);flex:0 0 auto;}
+.sheet-head .sh-who{font-family:'Fraunces',serif;font-size:16px;font-weight:600;}
+.sheet-head .sh-role{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold-deep);}
+.sheet-x{margin-left:auto;background:none;border:none;font-size:20px;color:var(--muted);width:32px;height:32px;border-radius:8px;}
+.sheet-x:hover{background:var(--cream);}
+.sheet-body{flex:1 1 auto;overflow-y:auto;padding:16px 15px 8px;-webkit-overflow-scrolling:touch;}
+.sheet-foot{flex:0 0 auto;display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--line);padding-bottom:calc(10px + env(safe-area-inset-bottom));}
+.sheet-foot input{flex:1;font-size:16px;border:1px solid var(--line2);border-radius:22px;padding:11px 15px;background:var(--paper);outline:none;}
+.sheet-foot input:focus{border-color:var(--gold-deep);}
+.sheet-foot button{border:none;background:var(--ink);color:var(--gold);border-radius:22px;padding:0 17px;font-family:inherit;font-weight:600;font-size:14px;}
+.sheet-foot button:disabled{opacity:.5;}
+.bub{max-width:86%;padding:11px 14px;border-radius:15px;font-size:14px;line-height:1.5;margin-bottom:11px;white-space:pre-wrap;}
+.bub.me{background:var(--ink);color:#fff;margin-left:auto;border-bottom-right-radius:4px;}
+.bub.ai{background:var(--cream);color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:4px;}
+.bub.sug{background:#FBEFE0;border:none;color:var(--gold-deep);font-weight:600;display:inline-block;width:auto;max-width:100%;margin:0 6px 8px 0;}
+
+/* ===== VISUALIZATION (lightweight, no libs) ===== */
+.chart{display:flex;flex-direction:column;gap:8px;}
+.barrow{display:grid;grid-template-columns:130px 1fr auto;align-items:center;gap:10px;font-size:12.5px;}
+.barrow .bl{color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bartrack{height:16px;background:var(--cream);border-radius:6px;overflow:hidden;}
+.barfill{height:100%;border-radius:6px;transition:width .4s ease;}
+.barrow .bn{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--muted);}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block;}
+.no-select{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;}
+body{overscroll-behavior-y:contain;}
+</style>
+</head>
+<body>
+<div id="root">
+  <div class="boot-splash">
+    <img src="/icons/logo.png" alt="Ugly Donuts and Corn Dogs" />
+    <div class="boot-spinner"></div>
+    <div class="boot-name">Ugly Studio</div>
+  </div>
+</div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ========================================================= CONFIG ==== */
+const SUPABASE_URL  = "https://kqnserohxtzpjolgvhrk.supabase.co";
+const SUPABASE_ANON = "sb_publishable_6KTq8xbNOFzj1vSjYn-fWw_3MSqG0Yx";
+const VAPID_PUBLIC  = "BO4lvbB4leneMHIHksK-DrXUt4-b0b6PzEwhbijDAeC30LLvEiLAz5CT49S0boNto0GpcgE6NuyzOcx3RqeGCr8";
+const FN = "/.netlify/functions";
+const LOCAL = !SUPABASE_URL || SUPABASE_URL.indexOf("__") === 0;
+const sb = LOCAL ? null : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+const STANDALONE = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+/* ========================================================= BRAND DNA == */
+const DEFAULT_DNA = {
+  philosophy: {
+    tagline: "A bite to remember",
+    why: "My mother handed me a Korean corn dog when I was a child. It was warm, and I never forgot it. We are not selling food. We are giving people a memory they carry for the rest of their lives.",
+    positioning: "The only premium-positioned Korean corn dog brand in the U.S. Made to order, cooked in avocado oil, built slowly on quality while others chased short-term franchise money."
+  },
+  colors: [
+    { name: "Golden Tan", hex: "#EABF70", role: "Primary. Straight from the logo. Warmth and craft." },
+    { name: "Brick Red",  hex: "#B23A2E", role: "Accent. Appetite, heat, the fried edge." },
+    { name: "Ink Black",  hex: "#1A1512", role: "Wordmark and text. Confidence, not coldness." },
+    { name: "Cream",      hex: "#FBF7EF", role: "Background. Space to breathe." },
+    { name: "Paper",      hex: "#FFFFFF", role: "Clean base that lets the product be the hero." }
+  ],
+  voice: {
+    tone: "Krispy Kreme-level restrained premium. Warm, human, peer to peer. The why comes first, numbers come after.",
+    dos: [
+      "Lead with the emotional why before any operational detail",
+      "Let product photography carry the moment",
+      "Short, confident, plain lines. Sentence case.",
+      "Every piece should feel considered, never mass produced"
+    ],
+    donts: [
+      "No em dashes, ever. Use commas, periods, parentheses or colons.",
+      "No hype, no sales-closing pressure, no 'limited time only!!'",
+      "No AI-looking dark navy and gold. Anchor in the real palette.",
+      "No gradients or glassmorphism on brand pieces",
+      "Never recreate the wordmark as text or CSS"
+    ]
+  },
+  typography: {
+    display: "Warm high-contrast serif (Fraunces / Playfair family) used with restraint",
+    body: "Clean humanist sans (Inter)",
+    note: "Big quiet type, generous white space. Restraint is the premium signal."
+  },
+  logo: "IMG_9394.png is the real wordmark (logo + wordmark combined). Never rebuild it as text."
+};
+
+function learningsBlock(learnings) {
+  const on = (learnings || []).filter(l => l.active);
+  if (!on.length) return "";
+  const line = (l) => `- ${l.text}${l.weight > 1 ? ` (reinforced ${l.weight}x, treat as a hard rule)` : ""}`;
+  const grp = (k) => on.filter(l => l.kind === k).sort((a, b) => b.weight - a.weight).map(line).join("\n");
+  const dis = grp("dislike"), emp = grp("emphasis"), mis = grp("mistake");
+  const out = ["", "WHAT WE HAVE LEARNED FROM THE TEAM (obey these over your defaults):"];
+  if (dis) out.push("Things we dislike, never produce them:\n" + dis);
+  if (emp) out.push("Things we always emphasize, carry them through:\n" + emp);
+  if (mis) out.push("Mistakes you keep making, do not repeat them:\n" + mis);
+  return out.join("\n");
+}
+
+function buildBrandSystem(dna, learnings) {
+  const c = (dna.colors || []).map(x => `${x.name} ${x.hex} (${x.role})`).join("; ");
+  return [
+    "You are the Brand Director for Ugly Donuts & Corn Dogs, a premium Korean corn dog and handmade donut brand.",
+    "Every idea you produce must sound and look like this brand. The brand's why always leads.",
+    "",
+    `PHILOSOPHY / WHY: ${dna.philosophy?.why || ""}`,
+    `TAGLINE: ${dna.philosophy?.tagline || ""}`,
+    `POSITIONING: ${dna.philosophy?.positioning || ""}`,
+    `VOICE: ${dna.voice?.tone || ""}`,
+    `PALETTE: ${c}`,
+    `TYPOGRAPHY: display = ${dna.typography?.display}; body = ${dna.typography?.body}. ${dna.typography?.note || ""}`,
+    `DO: ${(dna.voice?.dos || []).join(" | ")}`,
+    `DO NOT: ${(dna.voice?.donts || []).join(" | ")}`,
+    "",
+    "Hard rules: never use em dashes. Never invent facts. Restraint over hype. Warm, human, premium.",
+    learningsBlock(learnings)
+  ].join("\n");
+}
+
+const IMG_STYLE_SUFFIX =
+  " Style: premium restrained food-brand art direction for Ugly Donuts. Warm golden tan (#EABF70), brick red, cream and paper white palette. Natural soft light, appetizing, editorial, Krispy Kreme-level restraint. No gradients, no glassmorphism, no stocky AI gloss. Clean negative space.";
+
+const TASKS = [
+  { id: "poster",       label: "Poster",         size: "1024x1536", hint: "Print or in-store promo poster" },
+  { id: "social",       label: "Social post",    size: "1024x1024", hint: "Instagram / feed content" },
+  { id: "store_design", label: "Store design",   size: "1536x1024", hint: "Storefront / facade concept" },
+  { id: "interior",     label: "Interior",       size: "1536x1024", hint: "Interior mockup, seating, counter" },
+  { id: "menu",         label: "Menu board",     size: "1024x1536", hint: "Menu / signage layout" },
+  { id: "packaging",    label: "Packaging",      size: "1024x1024", hint: "Boxes, sleeves, cups" },
+  { id: "free",         label: "Free brief",     size: "1024x1024", hint: "Anything, describe it" }
+];
+const KINDS = ["all","poster","photo","deck","menu","packaging","signage","render","other"];
+
+/* ========================================================= HELPERS ==== */
+async function fnCall(name, payload) {
+  const r = await fetch(`${FN}/${name}`, {
+    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload)
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(data.error || `${name} failed`);
+  return data;
+}
+function fileToB64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(",")[1]);
+    r.onerror = () => rej(new Error("read failed"));
+    r.readAsDataURL(file);
+  });
+}
+function stripJSON(t) {
+  const m = t.match(/```(?:json)?([\s\S]*?)```/);
+  let s = (m ? m[1] : t).trim();
+  const a = s.indexOf("{"), b = s.lastIndexOf("}");
+  if (a >= 0 && b > a) s = s.slice(a, b + 1);
+  try { return JSON.parse(s); } catch { return null; }
+}
+function b64ToBlob(b64, mime = "image/png") {
+  const bin = atob(b64); const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+function urlB64ToUint8(base64) {
+  const pad = "=".repeat((4 - (base64.length % 4)) % 4);
+  const b64 = (base64 + pad).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(b64); const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+async function registerSW() {
+  if (!("serviceWorker" in navigator)) return null;
+  try { return await navigator.serviceWorker.register("/sw.js"); }
+  catch { return null; }
+}
+async function subscribePush() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) throw new Error("Push is not supported on this device");
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") throw new Error("Notifications were not allowed");
+  const reg = await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8(VAPID_PUBLIC) });
+  const j = sub.toJSON();
+  if (!LOCAL) await sb.from("push_subscriptions").upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, ua: navigator.userAgent }, { onConflict: "endpoint" });
+  return true;
+}
+function setBadge(n) {
+  try { if (n > 0 && navigator.setAppBadge) navigator.setAppBadge(n); else if (navigator.clearAppBadge) navigator.clearAppBadge(); } catch {}
+}
+
+/* ========================================================= AUTH ======= */
+function Auth({ onIn }) {
+  const [email, setEmail] = useState(""); const [pw, setPw] = useState("");
+  const [err, setErr] = useState(""); const [busy, setBusy] = useState(false);
+  async function go() {
+    setErr(""); setBusy(true);
+    try {
+      const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+      if (error) throw error;
+    } catch (e) { setErr(e.message || "Could not sign in"); }
+    finally { setBusy(false); }
+  }
+  return (
+    <div className="auth">
+      <div className="auth-card">
+        <img className="auth-mark" src="/icons/logo.png" alt="Ugly Donuts" />
+        <div className="auth-title serif">Ugly Studio</div>
+        <div className="auth-sub">Where the brand makes its work</div>
+        <label className="lbl">HQ email</label>
+        <input className="fld" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="hq@uglydonutsncorndogs.com" />
+        <label className="lbl">Password</label>
+        <input className="fld" type="password" value={pw} onChange={e=>setPw(e.target.value)}
+          onKeyDown={e=>e.key==="Enter"&&go()} placeholder="••••••••" />
+        <button className="btn btn-gold" style={{width:"100%",marginTop:6}} onClick={go} disabled={busy}>
+          {busy ? <span className="spin"></span> : null}{busy ? "Signing in" : "Enter the studio"}
+        </button>
+        <div className="auth-err">{err}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ========================================================= BRAND DNA == */
+function BrandDNA({ dna, setDna, saveDna }) {
+  const [edit, setEdit] = useState(false);
+  const [draft, setDraft] = useState(dna);
+  const [busy, setBusy] = useState(false);
+  useEffect(()=>{ setDraft(dna); }, [dna]);
+  async function save() { setBusy(true); await saveDna(draft); setBusy(false); setEdit(false); }
+  const d = edit ? draft : dna;
+  const upd = (path, val) => {
+    const n = JSON.parse(JSON.stringify(draft));
+    let o = n; for (let i=0;i<path.length-1;i++) o = o[path[i]];
+    o[path[path.length-1]] = val; setDraft(n);
+  };
+  return (
+    <div className="wrap">
+      <div className="row">
+        <div>
+          <div className="page-h serif">Brand DNA</div>
+          <div className="page-sub">Set this once. Every poster, caption and design in the studio is generated through it, so the crew always speaks in our voice.</div>
+        </div>
+        <div className="spacer"></div>
+        {edit
+          ? <div className="row"><button className="btn btn-ghost btn-sm" onClick={()=>{setEdit(false);setDraft(dna);}}>Cancel</button>
+              <button className="btn btn-gold btn-sm" onClick={save} disabled={busy}>{busy?"Saving":"Save DNA"}</button></div>
+          : <button className="btn btn-ghost btn-sm" onClick={()=>setEdit(true)}>Edit</button>}
+      </div>
+
+      <div className="card">
+        <div className="card-h">Why we exist</div>
+        {edit ? <>
+          <label className="lbl">Tagline</label>
+          <input className="fld" value={d.philosophy.tagline} onChange={e=>upd(["philosophy","tagline"],e.target.value)} style={{marginBottom:12}} />
+          <label className="lbl">The why</label>
+          <textarea className="fld" rows={4} value={d.philosophy.why} onChange={e=>upd(["philosophy","why"],e.target.value)} style={{marginBottom:12}} />
+          <label className="lbl">Positioning</label>
+          <textarea className="fld" rows={3} value={d.philosophy.positioning} onChange={e=>upd(["philosophy","positioning"],e.target.value)} />
+        </> : <>
+          <div className="dir-head serif" style={{fontSize:26,marginBottom:10}}>{d.philosophy.tagline}</div>
+          <p style={{fontSize:15,lineHeight:1.6,color:"var(--ink-soft)",maxWidth:660}}>{d.philosophy.why}</p>
+          <p className="mut" style={{marginTop:14,lineHeight:1.55,maxWidth:660}}>{d.philosophy.positioning}</p>
+        </>}
+      </div>
+
+      <div className="card">
+        <div className="card-h">Palette</div>
+        <div className="pal">
+          {d.colors.map((c,i)=>(
+            <div className="sw" key={i}>
+              <div className="sw-chip" style={{background:c.hex}}></div>
+              <div className="sw-body">
+                {edit
+                  ? <><input className="fld btn-sm" value={c.name} onChange={e=>{const n=[...draft.colors];n[i]={...n[i],name:e.target.value};setDraft({...draft,colors:n});}} style={{marginBottom:6,padding:"6px 8px"}}/>
+                      <input className="fld btn-sm" value={c.hex} onChange={e=>{const n=[...draft.colors];n[i]={...n[i],hex:e.target.value};setDraft({...draft,colors:n});}} style={{padding:"6px 8px"}}/></>
+                  : <><div className="sw-name">{c.name}</div><div className="sw-hex">{c.hex}</div><div className="sw-role">{c.role}</div></>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="two">
+        <div className="card">
+          <div className="card-h">Voice</div>
+          {edit
+            ? <textarea className="fld" rows={3} value={d.voice.tone} onChange={e=>upd(["voice","tone"],e.target.value)} />
+            : <p style={{fontSize:14,lineHeight:1.6,color:"var(--ink-soft)"}}>{d.voice.tone}</p>}
+          <div style={{height:18}}></div>
+          <div className="card-h">Typography</div>
+          <p className="mut" style={{lineHeight:1.55}}><b style={{color:"var(--ink)"}}>Display</b> · {d.typography.display}</p>
+          <p className="mut" style={{lineHeight:1.55,marginTop:4}}><b style={{color:"var(--ink)"}}>Body</b> · {d.typography.body}</p>
+          <p className="mut" style={{lineHeight:1.55,marginTop:6,fontStyle:"italic"}}>{d.typography.note}</p>
+        </div>
+        <div className="card">
+          <div className="card-h">Do and don't</div>
+          <ul className="dolist do" style={{marginBottom:14}}>
+            {d.voice.dos.map((x,i)=><li key={i}><span className="mk">✓</span><span>{x}</span></li>)}
+          </ul>
+          <ul className="dolist dont">
+            {d.voice.donts.map((x,i)=><li key={i}><span className="mk">✕</span><span>{x}</span></li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ========================================================= LIBRARY ==== */
+function Library({ items, addItems, analyze, dna }) {
+  const [kind, setKind] = useState("all");
+  const [q, setQ] = useState("");
+  const [busyId, setBusyId] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
+  const shown = items.filter(it => (kind==="all"||it.kind===kind))
+    .filter(it => { if(!q)return true; const s=(it.title+" "+(it.tags||[]).join(" ")+" "+(it.ai_analysis||"")).toLowerCase(); return s.includes(q.toLowerCase()); });
+
+  async function onFiles(e) {
+    const files = Array.from(e.target.files || []); if(!files.length) return;
+    setUploading(true);
+    try { await addItems(files); } finally { setUploading(false); if(fileRef.current) fileRef.current.value=""; }
+  }
+  async function runAnalyze(it) {
+    setBusyId(it.id);
+    try { await analyze(it); } catch(err){ alert("Analyze failed: "+err.message); }
+    finally { setBusyId(null); }
+  }
+
+  return (
+    <div className="wrap">
+      <div className="row">
+        <div>
+          <div className="page-h serif">Library</div>
+          <div className="page-sub">Every poster, photo and deck we have ever made, kept in one place. The crew studies these so new work builds on what already feels like us.</div>
+        </div>
+        <div className="spacer"></div>
+        <button className="btn btn-gold btn-sm" onClick={()=>fileRef.current&&fileRef.current.click()} disabled={uploading}>
+          {uploading?<span className="spin"></span>:null}{uploading?"Uploading":"Upload work"}
+        </button>
+        <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onFiles} />
+      </div>
+
+      <div className="toolbar">
+        <div className="chips">
+          {KINDS.map(k=><button key={k} className={"chip"+(kind===k?" on":"")} onClick={()=>setKind(k)}>{k}</button>)}
+        </div>
+        <div className="spacer"></div>
+        <input className="fld" style={{maxWidth:230}} placeholder="Search title, tag, notes" value={q} onChange={e=>setQ(e.target.value)} />
+      </div>
+
+      {items.length>0&&
+        <div className="card" style={{marginBottom:18}}>
+          <div className="card-h">Collection at a glance</div>
+          <BarChart data={KINDS.filter(k=>k!=="all").map(k=>({label:k,value:items.filter(it=>it.kind===k).length})).filter(d=>d.value>0).sort((a,b)=>b.value-a.value)} />
+          <div className="mut" style={{marginTop:10,fontSize:11.5}}>{items.length} item{items.length>1?"s":""} in the library, {items.filter(it=>it.ai_analysis).length} studied by the crew.</div>
+        </div>}
+
+      {shown.length===0
+        ? <div className="empty"><div className="em-ic">🗂️</div>
+            <div style={{fontWeight:600,marginBottom:4}}>Nothing here yet</div>
+            <div className="mut">Upload the posters and photos we already have. The crew learns from them.</div></div>
+        : <div className="grid">
+            {shown.map(it=>(
+              <div className="tile" key={it.id}>
+                <div className="tile-img" style={{backgroundImage:it.thumb_url||it.file_url?`url(${it.thumb_url||it.file_url})`:"none"}}>
+                  <span className="tile-kind">{it.kind}</span>
+                </div>
+                <div className="tile-body">
+                  <div className="tile-title">{it.title}</div>
+                  {it.ai_analysis
+                    ? <div className="tile-an">{it.ai_analysis}</div>
+                    : <button className="btn btn-ghost btn-sm" style={{alignSelf:"flex-start"}} disabled={busyId===it.id} onClick={()=>runAnalyze(it)}>
+                        {busyId===it.id?<span className="spin"></span>:null}{busyId===it.id?"Studying":"Study with Claude"}</button>}
+                  {it.tags&&it.tags.length>0&&<div className="tile-tags">{it.tags.map((t,i)=><span className="ttag" key={i}>{t}</span>)}</div>}
+                </div>
+              </div>
+            ))}
+          </div>}
+    </div>
+  );
+}
+
+/* ========================================================= STUDIO ===== */
+function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }) {
+  const [task, setTask] = useState("poster");
+  const [brief, setBrief] = useState("");
+  const [dir, setDir] = useState(null);       // director JSON
+  const [prompt, setPrompt] = useState("");
+  const [img, setImg] = useState(null);       // {b64} or {url}
+  const [phase, setPhase] = useState("idle"); // idle | directing | directed | rendering | done
+  const [err, setErr] = useState("");
+  const [fb, setFb] = useState("");           // feedback note
+  const [learned, setLearned] = useState(""); // toast after learning
+  const [fbBusy, setFbBusy] = useState(false);
+
+  const taskObj = TASKS.find(t=>t.id===task);
+  const appliedCount = (learnings||[]).filter(l=>l.active).length;
+
+  async function sendFeedback(verdict) {
+    setFbBusy(true); setLearned("");
+    try {
+      const summary = await learn({
+        verdict, note: fb,
+        context: { task: taskObj.label, brief, headline: dir&&dir.headline, image_prompt: prompt }
+      });
+      setLearned(summary || "Noted for next time.");
+      setFb("");
+    } catch(e){ alert("Could not save the lesson: "+e.message); }
+    finally { setFbBusy(false); }
+  }
+
+  async function direct() {
+    if(!brief.trim()) return;
+    setErr(""); setDir(null); setImg(null); setLearned(""); setPhase("directing");
+    try {
+      const system = buildBrandSystem(dna, learnings);
+      const ask = `Task type: ${taskObj.label} (${taskObj.hint}).\nBrief from the founder: "${brief}"\n\n`+
+        `As Brand Director, respond with ONLY a JSON object, no prose, with these keys:\n`+
+        `{"concept": string (1-2 sentences, the idea and the feeling),`+
+        `"headline": string (short, on-brand, may be empty for pure design tasks),`+
+        `"subhead": string,`+
+        `"cta": string,`+
+        `"image_prompt": string (a full, vivid art-direction prompt for the image model, describing composition, subject, lighting, mood, and any on-image text; must reflect the palette and restraint),`+
+        `"notes": string (why this works for the brand)}`;
+      const { text } = await fnCall("ai-text", { system, messages:[{role:"user",content:ask}] });
+      const j = stripJSON(text) || { concept:text, headline:"", subhead:"", cta:"", image_prompt:brief, notes:"" };
+      setDir(j);
+      setPrompt((j.image_prompt||brief) + IMG_STYLE_SUFFIX);
+      setPhase("directed");
+    } catch(e){ setErr(e.message); setPhase("idle"); }
+  }
+
+  async function render() {
+    setErr(""); setPhase("rendering");
+    try {
+      const { b64 } = await fnCall("ai-image", { prompt, size: taskObj.size });
+      const url = `data:image/png;base64,${b64}`;
+      setImg({ b64, url });
+      setPhase("done");
+      await saveCreation({ task_type:task, brief, director_out:JSON.stringify(dir), image_prompt:prompt, b64 });
+    } catch(e){ setErr(e.message); setPhase("directed"); }
+  }
+
+  const directing = phase==="directing", rendering = phase==="rendering";
+  const dirState = directing?"busy":(dir?"done":"");
+  const desState = rendering?"busy":(img?"done":"");
+
+  return (
+    <div className="wrap">
+      <div className="page-h serif">Studio</div>
+      <div className="page-sub">Describe what you need. Claude directs the concept and copy in our voice, then GPT renders it. You steer at every step.</div>
+
+      {/* the crew */}
+      <div className="crew">
+        <div className={"crew-card "+dirState}>
+          <div className="crew-role">Brand Director</div>
+          <div className="crew-who">Claude</div>
+          <div className="crew-does">Reads the Brand DNA, shapes the concept, writes the copy and the art direction.</div>
+          <span className="badge">{directing?"Thinking…":dir?"Directed":"Ready"}</span>
+        </div>
+        <div className="crew-arrow">→</div>
+        <div className={"crew-card "+desState}>
+          <div className="crew-role">Designer</div>
+          <div className="crew-who">GPT Image</div>
+          <div className="crew-does">Takes the direction and renders the poster, mockup or packaging visual.</div>
+          <span className="badge">{rendering?"Rendering…":img?"Rendered":"Waiting"}</span>
+        </div>
+      </div>
+
+      <div className="row" style={{marginBottom:12}}>
+        <span className="mut">The crew works from your Brand DNA and everything it has learned.</span>
+        {appliedCount>0&&<span className="applied">✦ {appliedCount} lesson{appliedCount>1?"s":""} applied</span>}
+      </div>
+
+      <div className="card">
+        <div className="tasks">
+          {TASKS.map(t=><button key={t.id} className={"task"+(task===t.id?" on":"")} onClick={()=>setTask(t.id)}>{t.label}</button>)}
+        </div>
+        <label className="lbl">Brief</label>
+        <textarea className="fld" rows={3} value={brief} onChange={e=>setBrief(e.target.value)}
+          placeholder={"e.g. Summer promo poster for the Hot Cheetos corn dog. Playful but premium, lead with a warm memory feeling."} />
+        <div className="row" style={{marginTop:12}}>
+          <button className="btn btn-brick" onClick={direct} disabled={directing||rendering||!brief.trim()}>
+            {directing?<span className="spin"></span>:null}{directing?"Directing":"Direct it"}
+          </button>
+          <span className="mut">{taskObj.hint} · {taskObj.size.replace("x"," × ")}</span>
+        </div>
+        {err&&<div className="auth-err" style={{textAlign:"left"}}>{err}</div>}
+
+        {dir&&<div className="director">
+          <div className="dir-block"><div className="dir-k">Concept</div><div className="dir-body">{dir.concept}</div></div>
+          {(dir.headline||dir.subhead||dir.cta)&&<div className="dir-block"><div className="dir-k">Copy</div>
+            {dir.headline&&<div className="dir-head serif">{dir.headline}</div>}
+            {dir.subhead&&<div className="dir-sub">{dir.subhead}</div>}
+            {dir.cta&&<div className="dir-cta">{dir.cta}</div>}</div>}
+          <div className="dir-block"><div className="dir-k">Art direction (editable)</div>
+            <textarea className="fld" rows={4} value={prompt} onChange={e=>setPrompt(e.target.value)} /></div>
+          {dir.notes&&<div className="dir-block"><div className="dir-k">Why it works</div><div className="dir-body">{dir.notes}</div></div>}
+          <div className="row" style={{marginTop:14}}>
+            <button className="btn btn-gold" onClick={render} disabled={rendering}>
+              {rendering?<span className="spin"></span>:null}{rendering?"Rendering":"Render with GPT"}</button>
+          </div>
+        </div>}
+
+        {img&&<div className="result">
+          <img src={img.url} alt="rendered" />
+          <div className="row">
+            <a className="btn btn-ghost btn-sm" href={img.url} download={`ugly-${task}-${Date.now()}.png`}>Download</a>
+            <button className="btn btn-ghost btn-sm" onClick={()=>addToLibrary({task_type:task,brief,b64:img.b64})}>Save to Library</button>
+            <button className="btn btn-ghost btn-sm" onClick={render} disabled={rendering}>Try another render</button>
+          </div>
+        </div>}
+
+        {dir&&<div className="fb">
+          <div className="fb-h">Teach the crew</div>
+          <input className="fld" placeholder="What was off, or what you loved. e.g. background too dark, keep the memory feeling, used an em dash again" value={fb} onChange={e=>setFb(e.target.value)} onKeyDown={e=>e.key==="Enter"&&fb.trim()&&sendFeedback("dislike")} />
+          <div className="row" style={{marginTop:10}}>
+            <button className="btn btn-brick btn-sm" disabled={fbBusy||!fb.trim()} onClick={()=>sendFeedback("dislike")}>{fbBusy?<span className="spin"></span>:null}Off-brand, fix it</button>
+            <button className="btn btn-ghost btn-sm" disabled={fbBusy||!fb.trim()} onClick={()=>sendFeedback("emphasis")}>Nailed it, remember this</button>
+            <span className="mut" style={{marginLeft:"auto"}}>Repeated notes harden into rules.</span>
+          </div>
+          {learned&&<div className="learned-toast">{learned}</div>}
+        </div>}
+      </div>
+
+      {creations&&creations.length>0&&<div className="card">
+        <div className="card-h">Recent work</div>
+        <div className="hist">
+          {creations.slice(0,12).map(c=>c.image_url&&<img key={c.id} src={c.image_url} alt={c.task_type} title={c.brief} />)}
+        </div>
+      </div>}
+    </div>
+  );
+}
+
+/* ========================================================= LEARNINGS == */
+const LKINDS = [
+  { id:"dislike",  label:"Dislikes",  ic:"✕", hint:"Things we never want to see" },
+  { id:"emphasis", label:"Emphasis",  ic:"★", hint:"Things we always want carried through" },
+  { id:"mistake",  label:"Repeat mistakes", ic:"↻", hint:"Errors the crew keeps making" }
+];
+function Learnings({ learnings, addLearning, toggleLearning, removeLearning }) {
+  const [kind, setKind] = useState("dislike");
+  const [text, setText] = useState("");
+  const list = learnings.filter(l=>l.kind===kind).sort((a,b)=>b.weight-a.weight);
+  async function add(){ if(!text.trim())return; await addLearning({kind, text:text.trim(), origin:"manual"}); setText(""); }
+  const meta = LKINDS.find(k=>k.id===kind);
+  return (
+    <div className="wrap">
+      <div className="page-h serif">What the studio has learned</div>
+      <div className="page-sub">The crew reads this before every job. Give feedback in the Studio and lessons land here on their own. A lesson reinforced many times becomes a hard rule.</div>
+
+      <div className="tasks" style={{marginBottom:18}}>
+        {LKINDS.map(k=>{
+          const n = learnings.filter(l=>l.kind===k.id&&l.active).length;
+          return <button key={k.id} className={"task"+(kind===k.id?" on":"")} onClick={()=>setKind(k.id)}>{k.ic} {k.label}{n?` · ${n}`:""}</button>;
+        })}
+      </div>
+
+      {list.filter(l=>l.active).length>0&&
+        <div className="card" style={{marginBottom:18}}>
+          <div className="card-h">Rule strength</div>
+          <BarChart data={list.filter(l=>l.active).slice(0,8).map(l=>({label:l.text.length>26?l.text.slice(0,26)+"…":l.text, value:l.weight, color: l.weight>=3?"var(--brick)":"var(--gold)"}))} unit="×" />
+          <div className="mut" style={{marginTop:10,fontSize:11.5}}>Bars in brick red are hard rules (reinforced three times or more).</div>
+        </div>}
+
+      <div className="card" style={{marginBottom:18}}>
+        <label className="lbl">Add a {meta.label.toLowerCase().replace(/s$/,"")} rule</label>
+        <div className="row">
+          <input className="fld" style={{flex:1,minWidth:240}} placeholder={meta.hint} value={text} onChange={e=>setText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&add()} />
+          <button className="btn btn-gold btn-sm" onClick={add}>Add rule</button>
+        </div>
+      </div>
+
+      {list.length===0
+        ? <div className="empty"><div className="em-ic">{meta.ic}</div><div style={{fontWeight:600,marginBottom:4}}>No {meta.label.toLowerCase()} yet</div><div className="mut">React to work in the Studio and the crew will write these for you.</div></div>
+        : <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {list.map(l=>(
+              <div className="card" key={l.id} style={{padding:"15px 18px",opacity:l.active?1:.5}}>
+                <div className="row" style={{alignItems:"flex-start"}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:14,fontWeight:600,lineHeight:1.4}}>{l.text}</div>
+                    {l.examples&&l.examples.length>0&&<div className="mut" style={{marginTop:5,fontSize:11.5}}>from: {l.examples.slice(-2).join(" · ")}</div>}
+                  </div>
+                  <div className="row" style={{flexShrink:0}}>
+                    {l.weight>1&&<span className="lweight" title="times reinforced">×{l.weight}{l.weight>=3?" hard rule":""}</span>}
+                    <button className="btn btn-ghost btn-sm" onClick={()=>toggleLearning(l)}>{l.active?"Mute":"Enable"}</button>
+                    <button className="btn btn-ghost btn-sm" onClick={()=>removeLearning(l)}>✕</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>}
+    </div>
+  );
+}
+
+/* ========================================================= SHARED UI == */
+class ErrorBoundary extends React.Component {
+  constructor(p){ super(p); this.state={err:null}; }
+  static getDerivedStateFromError(err){ return {err}; }
+  render(){
+    if(this.state.err) return (
+      <div className="card crash">
+        <h2 className="serif">Something tripped up</h2>
+        <p>The studio hit an unexpected error. Reloading usually clears it. If it keeps happening, note what you were doing.</p>
+        <button className="btn btn-gold" onClick={()=>location.reload()}>Reload the studio</button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+function BarChart({ data, unit }) {
+  const max = Math.max(1, ...data.map(d=>d.value));
+  return (
+    <div className="chart">
+      {data.map((d,i)=>(
+        <div className="barrow" key={i}>
+          <span className="bl">{d.label}</span>
+          <div className="bartrack"><div className="barfill" style={{width:`${Math.round(d.value/max*100)}%`,background:d.color||"var(--gold)"}}></div></div>
+          <span className="bn">{d.value}{unit||""}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ChatSheet({ open, onClose, dna, learnings }) {
+  const [msgs, setMsgs] = useState([]);
+  const [q, setQ] = useState("");
+  const [busy, setBusy] = useState(false);
+  const bodyRef = useRef(null);
+  useEffect(()=>{ if(bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight; },[msgs,busy]);
+  const suggestions = ["Give me 3 poster ideas for a fall drink","Write a warm caption for the Potato corn dog","What colors should our packaging avoid?"];
+
+  async function send(text){
+    const content = (text||q).trim(); if(!content||busy) return;
+    const next = [...msgs,{role:"user",content}];
+    setMsgs(next); setQ(""); setBusy(true);
+    try{
+      const system = buildBrandSystem(dna, learnings) + "\nYou are the studio's on-call brand advisor in a chat. Answer briefly and practically, always in our voice. No em dashes.";
+      const { text:reply } = await fnCall("ai-text",{ system, messages:next.map(m=>({role:m.role,content:m.content})), max_tokens:900 });
+      setMsgs(m=>[...m,{role:"assistant",content:reply}]);
+    }catch(e){ setMsgs(m=>[...m,{role:"assistant",content:"I could not reach the model just now. "+e.message}]); }
+    finally{ setBusy(false); }
+  }
+  if(!open) return null;
+  return (
+    <div className="sheet-bg" onClick={onClose}>
+      <div className="sheet" onClick={e=>e.stopPropagation()}>
+        <div className="sheet-head">
+          <div><div className="sh-role">Brand Director</div><div className="sh-who serif">Ask the studio</div></div>
+          <button className="sheet-x" onClick={onClose}>✕</button>
+        </div>
+        <div className="sheet-body" ref={bodyRef}>
+          {msgs.length===0 && <>
+            <div className="bub ai">Ask me anything about the brand, copy, or a design direction. I answer in our voice and with everything the studio has learned.</div>
+            <div>{suggestions.map((s,i)=><button key={i} className="bub sug" onClick={()=>send(s)}>{s}</button>)}</div>
+          </>}
+          {msgs.map((m,i)=><div key={i} className={"bub "+(m.role==="user"?"me":"ai")}>{m.content}</div>)}
+          {busy && <div className="bub ai"><span className="spin"></span>Thinking</div>}
+        </div>
+        <div className="sheet-foot">
+          <input value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==="Enter"&&send()} placeholder="Ask the studio" />
+          <button onClick={()=>send()} disabled={busy||!q.trim()}>Send</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ========================================================= APP ======== */
+function App() {
+  const [ready, setReady] = useState(false);
+  const [session, setSession] = useState(null);
+  const [nav, setNav] = useState("dna");
+  const [dna, setDna] = useState(DEFAULT_DNA);
+  const [items, setItems] = useState([]);
+  const [creations, setCreations] = useState([]);
+  const [learnings, setLearnings] = useState([]);
+  const [railOpen, setRailOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [installEvt, setInstallEvt] = useState(null);
+  const [notifState, setNotifState] = useState(typeof Notification!=="undefined"?Notification.permission:"unsupported");
+  const [notifDismissed, setNotifDismissed] = useState(false);
+  const [notifBusy, setNotifBusy] = useState(false);
+
+  /* ---- boot ---- */
+  useEffect(()=>{
+    registerSW();
+    const onInstall = (e)=>{ e.preventDefault(); setInstallEvt(e); };
+    window.addEventListener("beforeinstallprompt", onInstall);
+    const onFocus = ()=>setBadge(0);
+    document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) setBadge(0); });
+    window.addEventListener("focus", onFocus);
+    setBadge(0);
+    return ()=>{ window.removeEventListener("beforeinstallprompt", onInstall); window.removeEventListener("focus", onFocus); };
+  },[]);
+
+  useEffect(()=>{
+    if(LOCAL){ seedLocal(); setReady(true); return; }
+    sb.auth.getSession().then(({data})=>{ setSession(data.session); setReady(true); });
+    const { data:sub } = sb.auth.onAuthStateChange((_e,s)=>setSession(s));
+    return ()=>sub.subscription.unsubscribe();
+  },[]);
+
+  useEffect(()=>{ if(session) loadAll(); },[session]);
+
+  function seedLocal(){
+    setDna(DEFAULT_DNA);
+    setItems([
+      { id:"s1", title:"Store wordmark", kind:"signage", tags:["logo","gold"], file_url:"/icons/wordmark.png", thumb_url:"/icons/wordmark.png",
+        ai_analysis:"Circular gold badge on white. Restrained, premium, hand-crafted feel. Golden tan #EABF70 on paper. This is the anchor of the identity." },
+      { id:"s2", title:"Primary logo", kind:"signage", tags:["logo"], file_url:"/icons/logo.png", thumb_url:"/icons/logo.png", ai_analysis:"" }
+    ]);
+    setCreations([]);
+    setLearnings([
+      { id:"k1", kind:"dislike",  text:"No dark navy backgrounds on product posters. Anchor in cream and paper.", weight:3, active:true, examples:["poster: background too dark"] },
+      { id:"k2", kind:"emphasis", text:"Always lead with the warm memory feeling before the product or the offer.", weight:4, active:true, examples:[] },
+      { id:"k3", kind:"mistake",  text:"Stop slipping em dashes into headlines. Use commas or periods.", weight:2, active:true, examples:["copy: used an em dash"] }
+    ]);
+  }
+
+  async function loadAll(){
+    const { data:d } = await sb.from("brand_dna").select("doc").eq("id",1).maybeSingle();
+    if(d && d.doc && Object.keys(d.doc).length) setDna(d.doc); else setDna(DEFAULT_DNA);
+    const { data:li } = await sb.from("library_items").select("*").order("created_at",{ascending:false});
+    setItems(li||[]);
+    const { data:cr } = await sb.from("creations").select("*").order("created_at",{ascending:false}).limit(24);
+    setCreations(cr||[]);
+    const { data:lz } = await sb.from("learnings").select("*").order("weight",{ascending:false});
+    setLearnings(lz||[]);
+  }
+
+  /* ---- brand dna ---- */
+  async function saveDna(next){
+    setDna(next);
+    if(LOCAL) return;
+    await sb.from("brand_dna").upsert({ id:1, doc:next, updated_at:new Date().toISOString() });
+  }
+
+  /* ---- library ---- */
+  async function addItems(files){
+    if(LOCAL){
+      const news = await Promise.all(files.map(async f=>({ id:"l"+Math.random().toString(36).slice(2),
+        title:f.name.replace(/\.[^.]+$/,""), kind:"poster", tags:[], file_url:URL.createObjectURL(f), thumb_url:URL.createObjectURL(f), ai_analysis:"", _file:f })));
+      setItems(p=>[...news,...p]); return;
+    }
+    for(const f of files){
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}-${f.name.replace(/[^\w.\-]/g,"_")}`;
+      const { error:ue } = await sb.storage.from("library").upload(path, f, { upsert:false, contentType:f.type });
+      if(ue){ alert("Upload failed: "+ue.message); continue; }
+      const { data:pu } = sb.storage.from("library").getPublicUrl(path);
+      const { data:row } = await sb.from("library_items").insert({
+        title:f.name.replace(/\.[^.]+$/,""), kind:"poster", file_url:pu.publicUrl, thumb_url:pu.publicUrl, source:"upload"
+      }).select().single();
+      if(row) setItems(p=>[row,...p]);
+    }
+  }
+
+  async function analyze(it){
+    const system = buildBrandSystem(dna, learnings) + "\nYou are studying an existing piece of our work so it can guide future design. Be concrete about layout, palette, type, subject, and how on-brand it is. Keep it under 90 words. No em dashes.";
+    let b64, media_type="image/png";
+    if(LOCAL && it._file){ b64 = await fileToB64(it._file); media_type=it._file.type||"image/png"; }
+    else {
+      const res = await fetch(it.file_url); const blob = await res.blob(); media_type = blob.type||"image/png";
+      b64 = await new Promise((r,j)=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(",")[1]);fr.onerror=()=>j(new Error("read"));fr.readAsDataURL(blob);});
+    }
+    const { text } = await fnCall("ai-vision", { system, b64, media_type, ask:"Analyze this Ugly Donuts brand material." });
+    setItems(p=>p.map(x=>x.id===it.id?{...x,ai_analysis:text}:x));
+    if(!LOCAL) await sb.from("library_items").update({ ai_analysis:text }).eq("id",it.id);
+  }
+
+  /* ---- studio ---- */
+  async function saveCreation({ task_type, brief, director_out, image_prompt, b64 }){
+    if(LOCAL){
+      const url = `data:image/png;base64,${b64}`;
+      setCreations(p=>[{ id:"c"+Math.random().toString(36).slice(2), task_type, brief, image_url:url, image_prompt },...p]);
+      return;
+    }
+    const path = `${Date.now()}-${task_type}.png`;
+    await sb.storage.from("creations").upload(path, b64ToBlob(b64), { contentType:"image/png" });
+    const { data:pu } = sb.storage.from("creations").getPublicUrl(path);
+    const { data:row } = await sb.from("creations").insert({ task_type, brief, director_out, image_prompt, image_url:pu.publicUrl, status:"done" }).select().single();
+    if(row) setCreations(p=>[row,...p]);
+  }
+
+  async function addToLibrary({ task_type, brief, b64 }){
+    if(LOCAL){
+      const url = `data:image/png;base64,${b64}`;
+      setItems(p=>[{ id:"l"+Math.random().toString(36).slice(2), title:brief.slice(0,40)||task_type, kind:"render", tags:[task_type], file_url:url, thumb_url:url, ai_analysis:"" },...p]);
+      alert("Saved to Library."); return;
+    }
+    const path = `${Date.now()}-lib-${task_type}.png`;
+    await sb.storage.from("library").upload(path, b64ToBlob(b64), { contentType:"image/png" });
+    const { data:pu } = sb.storage.from("library").getPublicUrl(path);
+    const { data:row } = await sb.from("library_items").insert({ title:brief.slice(0,60)||task_type, kind:"render", tags:[task_type], file_url:pu.publicUrl, thumb_url:pu.publicUrl, source:"studio" }).select().single();
+    if(row){ setItems(p=>[row,...p]); alert("Saved to Library."); }
+  }
+
+  /* ---- learning memory ---- */
+  const STOP = new Set(["the","a","an","to","of","on","in","is","are","it","its","was","were","and","or","for","with","that","this","too","be","as","at","we","our","dont","do","not","no","never","always","keep","stop","use","using","used","again"]);
+  function tokenSet(s){
+    return new Set((s||"").toLowerCase().replace(/[^\w\s]/g," ").split(/\s+/)
+      .filter(Boolean)
+      .map(w => (w.length>3 && !w.endsWith("ss")) ? w.replace(/(?:es|s)$/,"") : w) // crude singularize
+      .filter(w => w && !STOP.has(w)));
+  }
+  function jaccard(a,b){ let i=0; a.forEach(w=>{ if(b.has(w)) i++; }); const u=a.size+b.size-i; return u? i/u : 0; }
+  function findSimilar(kind, text){
+    const n = tokenSet(text);
+    return learnings.find(l => l.kind===kind && jaccard(n, tokenSet(l.text)) >= 0.4);
+  }
+
+  async function reinforce(l, example){
+    setLearnings(p=>p.map(x=>x.id===l.id?{...x,weight:x.weight+1,examples:[...(x.examples||[]),example].filter(Boolean).slice(-5)}:x));
+    if(!LOCAL) await sb.rpc("reinforce_learning",{ p_id:l.id, p_example:example||"" });
+  }
+
+  async function insertLearning({kind,text,origin,example}){
+    if(LOCAL){
+      setLearnings(p=>[{id:"k"+Math.random().toString(36).slice(2),kind,text,weight:1,active:true,examples:example?[example]:[],origin:origin||"feedback"},...p]);
+      return;
+    }
+    const { data:row } = await sb.from("learnings").insert({ kind, text, origin:origin||"feedback", examples:example?[example]:[] }).select().single();
+    if(row) setLearnings(p=>[row,...p]);
+  }
+
+  // called from Studio: turn a reaction into durable lessons
+  async function learn({ verdict, note, context }){
+    const existing = learnings.filter(l=>l.active).map(l=>`[${l.kind}] ${l.text}`).join("\n") || "(none yet)";
+    const sys = "You maintain the design taste memory for the Ugly Donuts brand studio. "+
+      "Turn the team's feedback into short, durable, reusable rules the AI crew must follow. "+
+      "Each rule is one imperative sentence, specific, no em dashes. Classify each as dislike, emphasis, or mistake. "+
+      "A 'mistake' is an error the AI made (like using an em dash, or ignoring the palette). "+
+      "Do not restate rules that already exist. Return ONLY JSON.";
+    const ask = `Existing rules:\n${existing}\n\n`+
+      `Context: task=${context.task}; brief="${context.brief}"; headline="${context.headline||""}".\n`+
+      `Team reaction: ${verdict==="emphasis"?"they liked it":"they want it fixed"}.\n`+
+      `Their note: "${note}"\n\n`+
+      `Return JSON: {"lessons":[{"kind":"dislike|emphasis|mistake","text":"..."}]}. `+
+      `Only include genuinely new or clearly different lessons. If nothing new, return {"lessons":[]}.`;
+    const { text } = await fnCall("ai-text",{ system:sys, messages:[{role:"user",content:ask}], max_tokens:600 });
+    const j = stripJSON(text);
+    const lessons = (j&&Array.isArray(j.lessons))?j.lessons:[];
+    let added=0, bumped=0;
+    for(const L of lessons){
+      if(!L || !L.text) continue;
+      const kind = ["dislike","emphasis","mistake"].includes(L.kind)?L.kind:(verdict==="emphasis"?"emphasis":"dislike");
+      const sim = findSimilar(kind, L.text);
+      if(sim){ await reinforce(sim, note); bumped++; }
+      else { await insertLearning({ kind, text:L.text, example:note }); added++; }
+    }
+    if(!added && !bumped){
+      // fallback: still record the raw note so nothing is lost
+      const kind = verdict==="emphasis"?"emphasis":"dislike";
+      const sim = findSimilar(kind, note);
+      if(sim){ await reinforce(sim, note); bumped++; } else if(note.trim()){ await insertLearning({ kind, text:note.trim(), example:context.task }); added++; }
+    }
+    const parts=[];
+    if(added) parts.push(`${added} new rule${added>1?"s":""} learned`);
+    if(bumped) parts.push(`${bumped} rule${bumped>1?"s":""} reinforced (now stronger)`);
+    return parts.length?parts.join(", ")+". The crew will apply it next time.":"Noted.";
+  }
+
+  async function addLearning({kind,text,origin}){
+    const sim = findSimilar(kind,text);
+    if(sim){ await reinforce(sim,"manual"); return; }
+    await insertLearning({kind,text,origin});
+  }
+  async function toggleLearning(l){
+    setLearnings(p=>p.map(x=>x.id===l.id?{...x,active:!x.active}:x));
+    if(!LOCAL) await sb.from("learnings").update({active:!l.active}).eq("id",l.id);
+  }
+  async function removeLearning(l){
+    setLearnings(p=>p.filter(x=>x.id!==l.id));
+    if(!LOCAL) await sb.from("learnings").delete().eq("id",l.id);
+  }
+
+  async function enableNotifs(){
+    setNotifBusy(true);
+    try{ await subscribePush(); setNotifState("granted"); await fnCall("push-notify",{title:"Ugly Studio",body:"Notifications are on for this device."}).catch(()=>{}); }
+    catch(e){ setNotifState(typeof Notification!=="undefined"?Notification.permission:"unsupported"); alert(e.message); }
+    finally{ setNotifBusy(false); }
+  }
+  async function doInstall(){
+    if(!installEvt) return;
+    installEvt.prompt(); await installEvt.userChoice; setInstallEvt(null);
+  }
+  async function sendTestPush(){
+    try{ const r = await fnCall("push-notify",{title:"Ugly Studio",body:"This is a test notification.",tag:"ugly-test"}); alert(`Sent to ${r.sent} device(s).`); }
+    catch(e){ alert("Test failed: "+e.message); }
+  }
+
+  if(!ready) return <div className="auth"><div className="spin" style={{width:26,height:26}}></div></div>;
+  if(!LOCAL && !session) return <Auth onIn={()=>{}} />;
+
+  const dots = (dna.colors||[]).slice(0,5);
+  const NAV = [
+    { id:"dna",       ic:"◆", label:"Brand DNA" },
+    { id:"library",   ic:"▤", label:"Library" },
+    { id:"studio",    ic:"✦", label:"Studio" },
+    { id:"learnings", ic:"❉", label:"Learnings" },
+  ];
+
+  return (
+    <div className="shell">
+      <div className={"rail"+(railOpen?" open":"")}>
+        <div className="rail-top">
+          <img src="/icons/logo.png" alt="Ugly" />
+          <div><div className="rt-name serif">Ugly Studio</div><div className="rt-sub">Brand</div></div>
+        </div>
+        <div className="nav">
+          {NAV.map(n=>(
+            <button key={n.id} className={"nav-item"+(nav===n.id?" on":"")} onClick={()=>{setNav(n.id);setRailOpen(false);}}>
+              <span className="ic">{n.ic}</span>{n.label}
+            </button>
+          ))}
+        </div>
+        <div className="rail-foot">
+          <span className={"mode-chip "+(LOCAL?"mode-local":"mode-live")}>{LOCAL?"Preview mode":"Live"}</span>
+          <div className="who">{LOCAL?"Not connected to Supabase yet":(session&&session.user&&session.user.email)}</div>
+          {installEvt&&<button className="btn btn-gold btn-sm" style={{width:"100%",marginBottom:6}} onClick={doInstall}>Install app</button>}
+          {!LOCAL&&notifState!=="granted"&&notifState!=="unsupported"&&<button className="btn btn-ghost btn-sm" style={{width:"100%",marginBottom:6}} onClick={enableNotifs} disabled={notifBusy}>{notifBusy?"Turning on":"Turn on notifications"}</button>}
+          {!LOCAL&&notifState==="granted"&&<button className="btn btn-ghost btn-sm" style={{width:"100%",marginBottom:6}} onClick={sendTestPush}>Send test notification</button>}
+          {!LOCAL&&<button className="btn btn-ghost btn-sm" style={{width:"100%"}} onClick={()=>sb.auth.signOut()}>Sign out</button>}
+        </div>
+      </div>
+
+      <div className="main">
+        {!LOCAL&&STANDALONE&&notifState==="default"&&!notifDismissed&&
+          <div className="banner">
+            <span className="bi">🔔</span>
+            <div className="bt"><b>Turn on notifications</b> so the studio can reach this device.</div>
+            <button className="btn btn-gold btn-sm" onClick={enableNotifs} disabled={notifBusy}>{notifBusy?"...":"Turn on"}</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>setNotifDismissed(true)}>Later</button>
+          </div>}
+        <div className="ctxbar">
+          <button className="btn btn-ghost btn-sm burger" onClick={()=>setRailOpen(o=>!o)}>☰</button>
+          <span className="ctx-tag">{dna.philosophy&&dna.philosophy.tagline}</span>
+          <div className="ctx-dots">{dots.map((c,i)=><span key={i} style={{background:c.hex}} title={c.name}></span>)}</div>
+        </div>
+        {nav==="dna"     && <BrandDNA dna={dna} setDna={setDna} saveDna={saveDna} />}
+        {nav==="library" && <Library items={items} addItems={addItems} analyze={analyze} dna={dna} />}
+        {nav==="studio"  && <Studio dna={dna} learnings={learnings} learn={learn} saveCreation={saveCreation} addToLibrary={addToLibrary} creations={creations} />}
+        {nav==="learnings" && <Learnings learnings={learnings} addLearning={addLearning} toggleLearning={toggleLearning} removeLearning={removeLearning} />}
+      </div>
+
+      <button className="fab no-select" onClick={()=>setChatOpen(true)} title="Ask the studio">✦</button>
+      <ChatSheet open={chatOpen} onClose={()=>setChatOpen(false)} dna={dna} learnings={learnings} />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<ErrorBoundary><App/></ErrorBoundary>);
+</script>
+<script>
+/* Pull-to-refresh for the installed PWA (mobile touch only, top of page, no open sheet). */
+(function(){
+  var sy=0,pull=0,active=false,el=null;
+  function ind(){el=document.createElement('div');el.style.cssText='position:fixed;top:-46px;left:50%;transform:translateX(-50%);z-index:150;background:#1A1512;color:#EABF70;font:700 12px Inter,sans-serif;padding:9px 16px;border-radius:999px;transition:top .12s;box-shadow:0 4px 14px rgba(0,0,0,.25);pointer-events:none;';el.textContent='\u2193 Pull to refresh';document.body.appendChild(el);}
+  document.addEventListener('touchstart',function(e){ if((window.scrollY||0)<=0 && !document.querySelector('.sheet-bg')){ sy=e.touches[0].clientY; active=true; pull=0; } },{passive:true});
+  document.addEventListener('touchmove',function(e){ if(!active)return; pull=e.touches[0].clientY-sy; if(pull>18){ if(!el)ind(); var p=Math.min(pull,120); el.style.top=(p*0.45-38)+'px'; el.textContent=p>=100?'\u21bb Release to refresh':'\u2193 Pull to refresh'; } },{passive:true});
+  document.addEventListener('touchend',function(){ if(!active)return; active=false; if(el){ var willRefresh=pull>=100; el.style.top='-46px'; setTimeout(function(){ if(el){el.remove();el=null;} if(willRefresh) location.reload(); },160); } });
+})();
+</script>
+</body>
+</html>
