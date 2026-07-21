@@ -81,6 +81,38 @@ Supabase (Storage settings).
 Upload each brand's wordmark in Brand DNA. It becomes the app logo for that brand. Ugly ships with
 its real wordmark. Umma has a placeholder until you upload the real one.
 
+
+## Reference images in the Studio
+Under the brief there is a Reference images row. Add any images you want the director to consider
+(a mood shot, a competitor piece, a photo of the product). Claude studies them for mood, composition
+and styling and folds them into the concept and the image prompt, while staying in the brand voice.
+
+## Brand book in Brand DNA
+Brand DNA has a Brand book card. Upload the existing brand book (PDF or image). It is kept on record
+per brand. Press Read and draft DNA and Claude reads the book and fills in the DNA fields (philosophy,
+voice, palette, typography) for you to review and Save. Nothing is saved until you press Save.
+
+
+## Library categories
+Categories include poster, photo, logo, store design, interior, menu, packaging, signage, deck,
+render and other. When uploading, leave the selector on Auto (guesses by file type: image is a
+poster, PDF is a deck, HTML is other) or pick a category to apply to that upload. Every item also
+has a category dropdown on its tile, so you can reclassify anything later, for example marking a
+photo as store design or interior.
+
+
+## Making images in the Studio
+It is a two-step flow. Type your brief, then press Direct it. Claude writes the concept, copy and
+art direction. A Render with GPT button then appears in the direction card. Press it to generate the
+actual image. (The Ask the studio chat is Claude for advice and copy only, it does not render images,
+the Studio tab does.) Image generation needs OPENAI_API_KEY set in Netlify. It uses gpt-image-1 and
+automatically falls back to dall-e-3 if your OpenAI org is not verified, so images still generate.
+
+## Library auto-study, delete, category
+Uploads are studied automatically now, no need to press Study with Claude (that button stays as a
+manual re-run). Each tile shows Studying while it works. Every tile has Re-study and Delete, and a
+category dropdown to reclassify at any time.
+
 ## Files
 - `index.html` .............. the whole app
 - `netlify/functions/` ...... ai-text, ai-image, ai-vision, push-notify, lib/push (all zero npm deps)
