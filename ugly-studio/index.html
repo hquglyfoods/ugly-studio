@@ -15,6 +15,7 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.26.4/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -71,6 +72,10 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .rail-top img{width:38px;height:38px;object-fit:contain;}
 .rail-top .rt-name{font-size:16px;font-weight:600;line-height:1;}
 .rail-top .rt-sub{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-deep);font-weight:700;margin-top:3px;}
+.brandsw{display:flex;gap:5px;padding:12px 14px 4px;}
+.bsw{flex:1;padding:8px 6px;border-radius:9px;border:1px solid var(--line2);background:#fff;font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);transition:all .12s;}
+.bsw:hover{border-color:var(--gold-deep);}
+.bsw.on{background:var(--ink);color:var(--gold);border-color:var(--ink);}
 .nav{padding:14px 12px;display:flex;flex-direction:column;gap:2px;flex:1;}
 .nav-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;color:var(--ink-soft);
   font-size:13.5px;font-weight:500;background:none;border:none;text-align:left;width:100%;transition:background .12s,color .12s;}
@@ -124,6 +129,8 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .tile-img{aspect-ratio:4/5;background:var(--cream) center/cover no-repeat;position:relative;}
 .tile-kind{position:absolute;top:9px;left:9px;background:rgba(26,21,18,.82);color:#fff;font-size:10px;font-weight:600;
   letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:6px;}
+.tile-doc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;
+  font-size:22px;font-weight:600;color:var(--muted2);letter-spacing:.1em;}
 .tile-body{padding:12px 13px;flex:1;display:flex;flex-direction:column;gap:7px;}
 .tile-title{font-weight:600;font-size:13.5px;line-height:1.25;}
 .tile-an{font-size:11.5px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
@@ -265,8 +272,16 @@ const sb = LOCAL ? null : window.supabase.createClient(SUPABASE_URL, SUPABASE_AN
 const STANDALONE = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
+/* ========================================================= BRANDS ==== */
+const BRANDS = [
+  { slug: "ugly", name: "Ugly Donuts", short: "Ugly", logo: "/icons/logo.png" },
+  { slug: "umma", name: "Umma's Recipe", short: "Umma", logo: "/icons/umma.png" },
+];
+function brandOf(slug){ return BRANDS.find(b=>b.slug===slug) || BRANDS[0]; }
+
 /* ========================================================= BRAND DNA == */
 const DEFAULT_DNA = {
+  name: "Ugly Donuts & Corn Dogs",
   philosophy: {
     tagline: "A bite to remember",
     why: "My mother handed me a Korean corn dog when I was a child. It was warm, and I never forgot it. We are not selling food. We are giving people a memory they carry for the rest of their lives.",
@@ -300,8 +315,48 @@ const DEFAULT_DNA = {
     body: "Clean humanist sans (Inter)",
     note: "Big quiet type, generous white space. Restraint is the premium signal."
   },
-  logo: "IMG_9394.png is the real wordmark (logo + wordmark combined). Never rebuild it as text."
+  logo_url: ""
 };
+
+// Umma's Recipe starter DNA (a premium Korean syrup and pantry brand). Edit freely and upload the real logo.
+const DEFAULT_DNA_UMMA = {
+  name: "Umma's Recipe",
+  philosophy: {
+    tagline: "Made the way Umma made it",
+    why: "Every jar starts in a mother's kitchen. Umma's Recipe is the taste of being taken care of, made slowly, with real ingredients and nothing rushed.",
+    positioning: "A premium Korean syrup and pantry brand. Small batch, honest ingredients, quiet craft over noise."
+  },
+  colors: [
+    { name: "Honey Amber", hex: "#C98A3C", role: "Primary. Warm syrup, slow pour." },
+    { name: "Berry",       hex: "#8E3B4E", role: "Accent. Fruit, depth, richness." },
+    { name: "Ink Black",   hex: "#1A1512", role: "Text and wordmark." },
+    { name: "Cream",       hex: "#FBF6EE", role: "Background. Calm and warm." },
+    { name: "Paper",       hex: "#FFFFFF", role: "Clean base for the product." }
+  ],
+  voice: {
+    tone: "Warm, homemade, quietly premium. Personal and unhurried, like a note from your mother.",
+    dos: [
+      "Lead with care and memory before ingredients or claims",
+      "Let the jar and the pour carry the moment",
+      "Short, gentle, honest lines. Sentence case.",
+      "Feel handmade, never mass produced"
+    ],
+    donts: [
+      "No em dashes, ever.",
+      "No hype or discount-driven urgency",
+      "No cold or clinical health-food styling",
+      "No gradients or glassmorphism",
+      "Never recreate the wordmark as text or CSS"
+    ]
+  },
+  typography: {
+    display: "Warm serif used with restraint",
+    body: "Clean humanist sans (Inter)",
+    note: "Soft, spacious, homemade-premium. Restraint reads as quality."
+  },
+  logo_url: ""
+};
+function defaultDNA(brand){ return brand === "umma" ? DEFAULT_DNA_UMMA : DEFAULT_DNA; }
 
 function learningsBlock(learnings) {
   const on = (learnings || []).filter(l => l.active);
@@ -319,8 +374,7 @@ function learningsBlock(learnings) {
 function buildBrandSystem(dna, learnings) {
   const c = (dna.colors || []).map(x => `${x.name} ${x.hex} (${x.role})`).join("; ");
   return [
-    "You are the Brand Director for Ugly Donuts & Corn Dogs, a premium Korean corn dog and handmade donut brand.",
-    "Every idea you produce must sound and look like this brand. The brand's why always leads.",
+    `You are the Brand Director for ${dna.name || "this brand"}. Every idea you produce must sound and look like this brand, in its own voice. The brand's why always leads.`,
     "",
     `PHILOSOPHY / WHY: ${dna.philosophy?.why || ""}`,
     `TAGLINE: ${dna.philosophy?.tagline || ""}`,
@@ -348,7 +402,7 @@ const TASKS = [
   { id: "packaging",    label: "Packaging",      size: "1024x1024", hint: "Boxes, sleeves, cups" },
   { id: "free",         label: "Free brief",     size: "1024x1024", hint: "Anything, describe it" }
 ];
-const KINDS = ["all","poster","photo","deck","menu","packaging","signage","render","other"];
+const KINDS = ["all","poster","photo","logo","deck","menu","packaging","signage","render","other"];
 
 /* ========================================================= HELPERS ==== */
 async function fnCall(name, payload) {
@@ -406,6 +460,62 @@ function setBadge(n) {
   try { if (n > 0 && navigator.setAppBadge) navigator.setAppBadge(n); else if (navigator.clearAppBadge) navigator.clearAppBadge(); } catch {}
 }
 
+/* ---- file processing: shrink on receipt so storage stays light ---- */
+function loadImageFromBlob(blob){
+  return new Promise((res,rej)=>{ const img=new Image(); const u=URL.createObjectURL(blob);
+    img.onload=()=>{ URL.revokeObjectURL(u); res(img); }; img.onerror=()=>{ URL.revokeObjectURL(u); rej(new Error("image decode failed")); }; img.src=u; });
+}
+async function shrinkImage(blob, maxDim, type, quality){
+  const img = await loadImageFromBlob(blob);
+  const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+  const w = Math.max(1, Math.round(img.width*scale)), h = Math.max(1, Math.round(img.height*scale));
+  const cv = document.createElement("canvas"); cv.width=w; cv.height=h;
+  const ctx = cv.getContext("2d");
+  if (type === "image/jpeg"){ ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,w,h); } // flatten alpha for jpeg
+  ctx.drawImage(img,0,0,w,h);
+  const out = await new Promise(r=>cv.toBlob(r, type, quality));
+  return { blob: out, w, h };
+}
+async function pdfFirstPageThumb(file){
+  const pj = window.pdfjsLib;
+  if (pj && pj.GlobalWorkerOptions) pj.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+  const data = await file.arrayBuffer();
+  const pdf = await pj.getDocument({ data }).promise;
+  const page = await pdf.getPage(1);
+  const base = page.getViewport({ scale: 1 });
+  const scale = Math.min(1400 / base.width, 1);
+  const viewport = page.getViewport({ scale: Math.max(scale, 0.1) });
+  const cv = document.createElement("canvas"); cv.width = viewport.width; cv.height = viewport.height;
+  await page.render({ canvasContext: cv.getContext("2d"), viewport }).promise;
+  const blob = await new Promise(r=>cv.toBlob(r, "image/jpeg", 0.8));
+  return { blob, w: cv.width, h: cv.height };
+}
+function fileKind(file){
+  const t = file.type || "";
+  if (t.startsWith("image/")) return "image";
+  if (t === "application/pdf" || /\.pdf$/i.test(file.name)) return "pdf";
+  if (t === "text/html" || /\.html?$/i.test(file.name)) return "html";
+  return "other";
+}
+
+/* ---- brand theming: drive accent variables from the active brand's palette ---- */
+function darken(hex, amt){
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex||""); if(!m) return hex;
+  let n = parseInt(m[1],16); let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.max(0,Math.round(r*(1-amt))); g=Math.max(0,Math.round(g*(1-amt))); b=Math.max(0,Math.round(b*(1-amt)));
+  return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+function applyBrandTheme(dna){
+  const cols = dna.colors || [];
+  const prim = (cols[0] && cols[0].hex) || "#EABF70";
+  const acc  = (cols[1] && cols[1].hex) || "#B23A2E";
+  const root = document.documentElement.style;
+  root.setProperty("--gold", prim);
+  root.setProperty("--gold-deep", darken(prim, 0.22));
+  root.setProperty("--brick", acc);
+  root.setProperty("--brick-deep", darken(acc, 0.22));
+}
+
 /* ========================================================= AUTH ======= */
 function Auth({ onIn }) {
   const [email, setEmail] = useState(""); const [pw, setPw] = useState("");
@@ -439,12 +549,15 @@ function Auth({ onIn }) {
 }
 
 /* ========================================================= BRAND DNA == */
-function BrandDNA({ dna, setDna, saveDna }) {
+function BrandDNA({ dna, setDna, saveDna, setLogo }) {
   const [edit, setEdit] = useState(false);
   const [draft, setDraft] = useState(dna);
   const [busy, setBusy] = useState(false);
+  const [logoBusy, setLogoBusy] = useState(false);
+  const logoRef = useRef(null);
   useEffect(()=>{ setDraft(dna); }, [dna]);
   async function save() { setBusy(true); await saveDna(draft); setBusy(false); setEdit(false); }
+  async function onLogo(e){ const f=e.target.files&&e.target.files[0]; if(!f)return; setLogoBusy(true); try{ await setLogo(f); }catch(err){ alert(err.message); } finally{ setLogoBusy(false); if(logoRef.current) logoRef.current.value=""; } }
   const d = edit ? draft : dna;
   const upd = (path, val) => {
     const n = JSON.parse(JSON.stringify(draft));
@@ -479,6 +592,20 @@ function BrandDNA({ dna, setDna, saveDna }) {
           <p style={{fontSize:15,lineHeight:1.6,color:"var(--ink-soft)",maxWidth:660}}>{d.philosophy.why}</p>
           <p className="mut" style={{marginTop:14,lineHeight:1.55,maxWidth:660}}>{d.philosophy.positioning}</p>
         </>}
+      </div>
+
+      <div className="card">
+        <div className="card-h">Logo</div>
+        <div className="row" style={{alignItems:"center",gap:18}}>
+          <div style={{width:96,height:96,borderRadius:14,border:"1px solid var(--line)",background:"var(--cream) center/contain no-repeat",backgroundImage:dna.logo_url?`url(${dna.logo_url})`:"none",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            {!dna.logo_url&&<span className="mut" style={{fontSize:11}}>No logo</span>}
+          </div>
+          <div style={{flex:1}}>
+            <p className="mut" style={{lineHeight:1.5,marginBottom:10}}>Upload this brand's real wordmark. It shows in the app and anchors the identity. PNG with transparency works best.</p>
+            <button className="btn btn-ghost btn-sm" onClick={()=>logoRef.current&&logoRef.current.click()} disabled={logoBusy}>{logoBusy?<span className="spin"></span>:null}{logoBusy?"Uploading":(dna.logo_url?"Replace logo":"Upload logo")}</button>
+            <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={onLogo} />
+          </div>
+        </div>
       </div>
 
       <div className="card">
@@ -557,7 +684,7 @@ function Library({ items, addItems, analyze, dna }) {
         <button className="btn btn-gold btn-sm" onClick={()=>fileRef.current&&fileRef.current.click()} disabled={uploading}>
           {uploading?<span className="spin"></span>:null}{uploading?"Uploading":"Upload work"}
         </button>
-        <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={onFiles} />
+        <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf,text/html,.html,.htm" multiple className="hidden" onChange={onFiles} />
       </div>
 
       <div className="toolbar">
@@ -582,8 +709,9 @@ function Library({ items, addItems, analyze, dna }) {
         : <div className="grid">
             {shown.map(it=>(
               <div className="tile" key={it.id}>
-                <div className="tile-img" style={{backgroundImage:it.thumb_url||it.file_url?`url(${it.thumb_url||it.file_url})`:"none"}}>
+                <div className="tile-img" style={{backgroundImage:it.thumb_url?`url(${it.thumb_url})`:"none"}}>
                   <span className="tile-kind">{it.kind}</span>
+                  {!it.thumb_url&&<span className="tile-doc">{(it.tags||[]).includes("html")?"HTML":"FILE"}</span>}
                 </div>
                 <div className="tile-body">
                   <div className="tile-title">{it.title}</div>
@@ -895,7 +1023,8 @@ function App() {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState(null);
   const [nav, setNav] = useState("dna");
-  const [dna, setDna] = useState(DEFAULT_DNA);
+  const [brand, setBrand] = useState(()=>{ try { return localStorage.getItem("ugly_studio_brand")||"ugly"; } catch { return "ugly"; } });
+  const [dna, setDna] = useState(defaultDNA(brand));
   const [items, setItems] = useState([]);
   const [creations, setCreations] = useState([]);
   const [learnings, setLearnings] = useState([]);
@@ -919,37 +1048,54 @@ function App() {
   },[]);
 
   useEffect(()=>{
-    if(LOCAL){ seedLocal(); setReady(true); return; }
+    if(LOCAL){ seedLocal(brand); setReady(true); return; }
     sb.auth.getSession().then(({data})=>{ setSession(data.session); setReady(true); });
     const { data:sub } = sb.auth.onAuthStateChange((_e,s)=>setSession(s));
     return ()=>sub.subscription.unsubscribe();
   },[]);
 
-  useEffect(()=>{ if(session) loadAll(); },[session]);
+  // reload everything when the signed-in user or the active brand changes
+  useEffect(()=>{ if(session) loadAll(brand); },[session, brand]);
+  // in preview mode, reseed on brand switch
+  useEffect(()=>{ if(LOCAL && ready) seedLocal(brand); },[brand]);
+  // keep the app themed to the active brand's palette
+  useEffect(()=>{ applyBrandTheme(dna); },[dna]);
 
-  function seedLocal(){
-    setDna(DEFAULT_DNA);
-    setItems([
-      { id:"s1", title:"Store wordmark", kind:"signage", tags:["logo","gold"], file_url:"/icons/wordmark.png", thumb_url:"/icons/wordmark.png",
+  function switchBrand(slug){
+    if(slug===brand) return;
+    try { localStorage.setItem("ugly_studio_brand", slug); } catch {}
+    setDna(defaultDNA(slug)); setItems([]); setCreations([]); setLearnings([]);
+    setBrand(slug); setNav("dna"); setRailOpen(false);
+  }
+
+  function seedLocal(b){
+    const isUmma = b==="umma";
+    setDna(defaultDNA(b));
+    setItems(isUmma ? [
+      { id:"u1", title:"Umma logo", kind:"logo", tags:["logo"], file_url:"/icons/umma.png", thumb_url:"/icons/umma.png", ai_analysis:"" }
+    ] : [
+      { id:"s1", title:"Store wordmark", kind:"logo", tags:["logo","gold"], file_url:"/icons/wordmark.png", thumb_url:"/icons/wordmark.png",
         ai_analysis:"Circular gold badge on white. Restrained, premium, hand-crafted feel. Golden tan #EABF70 on paper. This is the anchor of the identity." },
-      { id:"s2", title:"Primary logo", kind:"signage", tags:["logo"], file_url:"/icons/logo.png", thumb_url:"/icons/logo.png", ai_analysis:"" }
+      { id:"s2", title:"Primary logo", kind:"logo", tags:["logo"], file_url:"/icons/logo.png", thumb_url:"/icons/logo.png", ai_analysis:"" }
     ]);
     setCreations([]);
-    setLearnings([
+    setLearnings(isUmma ? [
+      { id:"m1", kind:"emphasis", text:"Lead with the feeling of a mother's kitchen before ingredients.", weight:2, active:true, examples:[] }
+    ] : [
       { id:"k1", kind:"dislike",  text:"No dark navy backgrounds on product posters. Anchor in cream and paper.", weight:3, active:true, examples:["poster: background too dark"] },
       { id:"k2", kind:"emphasis", text:"Always lead with the warm memory feeling before the product or the offer.", weight:4, active:true, examples:[] },
       { id:"k3", kind:"mistake",  text:"Stop slipping em dashes into headlines. Use commas or periods.", weight:2, active:true, examples:["copy: used an em dash"] }
     ]);
   }
 
-  async function loadAll(){
-    const { data:d } = await sb.from("brand_dna").select("doc").eq("id",1).maybeSingle();
-    if(d && d.doc && Object.keys(d.doc).length) setDna(d.doc); else setDna(DEFAULT_DNA);
-    const { data:li } = await sb.from("library_items").select("*").order("created_at",{ascending:false});
+  async function loadAll(b){
+    const { data:d } = await sb.from("brand_dna").select("doc").eq("brand",b).maybeSingle();
+    if(d && d.doc && Object.keys(d.doc).length) setDna(d.doc); else setDna(defaultDNA(b));
+    const { data:li } = await sb.from("library_items").select("*").eq("brand",b).order("created_at",{ascending:false});
     setItems(li||[]);
-    const { data:cr } = await sb.from("creations").select("*").order("created_at",{ascending:false}).limit(24);
+    const { data:cr } = await sb.from("creations").select("*").eq("brand",b).order("created_at",{ascending:false}).limit(24);
     setCreations(cr||[]);
-    const { data:lz } = await sb.from("learnings").select("*").order("weight",{ascending:false});
+    const { data:lz } = await sb.from("learnings").select("*").eq("brand",b).order("weight",{ascending:false});
     setLearnings(lz||[]);
   }
 
@@ -957,37 +1103,80 @@ function App() {
   async function saveDna(next){
     setDna(next);
     if(LOCAL) return;
-    await sb.from("brand_dna").upsert({ id:1, doc:next, updated_at:new Date().toISOString() });
+    await sb.from("brand_dna").upsert({ brand, doc:next, updated_at:new Date().toISOString() }, { onConflict:"brand" });
+  }
+
+  async function setLogo(file){
+    const { blob } = await shrinkImage(file, 1024, "image/png", 0.92).catch(async()=>({ blob:file }));
+    if(LOCAL){ const url=URL.createObjectURL(blob); const next={...dna, logo_url:url}; setDna(next); return; }
+    const path = `${brand}/logo-${Date.now()}.png`;
+    const { error } = await sb.storage.from("library").upload(path, blob, { contentType:"image/png", upsert:true });
+    if(error){ alert("Logo upload failed: "+error.message); return; }
+    const { data:pu } = sb.storage.from("library").getPublicUrl(path);
+    const next = {...dna, logo_url: pu.publicUrl};
+    await saveDna(next);
   }
 
   /* ---- library ---- */
   async function addItems(files){
-    if(LOCAL){
-      const news = await Promise.all(files.map(async f=>({ id:"l"+Math.random().toString(36).slice(2),
-        title:f.name.replace(/\.[^.]+$/,""), kind:"poster", tags:[], file_url:URL.createObjectURL(f), thumb_url:URL.createObjectURL(f), ai_analysis:"", _file:f })));
-      setItems(p=>[...news,...p]); return;
-    }
     for(const f of files){
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}-${f.name.replace(/[^\w.\-]/g,"_")}`;
-      const { error:ue } = await sb.storage.from("library").upload(path, f, { upsert:false, contentType:f.type });
-      if(ue){ alert("Upload failed: "+ue.message); continue; }
-      const { data:pu } = sb.storage.from("library").getPublicUrl(path);
-      const { data:row } = await sb.from("library_items").insert({
-        title:f.name.replace(/\.[^.]+$/,""), kind:"poster", file_url:pu.publicUrl, thumb_url:pu.publicUrl, source:"upload"
-      }).select().single();
-      if(row) setItems(p=>[row,...p]);
+      const k = fileKind(f);
+      try {
+        if(LOCAL){
+          let thumb, kind="other", tags=[];
+          if(k==="image"){ const s=await shrinkImage(f, 2000, "image/jpeg", 0.82); thumb=URL.createObjectURL(s.blob); kind="poster"; }
+          else if(k==="pdf"){ const t=await pdfFirstPageThumb(f); thumb=URL.createObjectURL(t.blob); kind="deck"; }
+          else if(k==="html"){ thumb=""; kind="other"; tags=["html"]; }
+          setItems(p=>[{ id:"l"+Math.random().toString(36).slice(2), title:f.name.replace(/\.[^.]+$/,""), kind, tags,
+            file_url:URL.createObjectURL(f), thumb_url:thumb, ai_analysis:"", _file:f },...p]);
+          continue;
+        }
+        const stamp = `${brand}/${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const safe = f.name.replace(/[^\w.\-]/g,"_");
+        let file_url, thumb_url="", kind="other", tags=[];
+        if(k==="image"){
+          const s = await shrinkImage(f, 2000, "image/jpeg", 0.82);
+          await sb.storage.from("library").upload(`${stamp}-${safe}.jpg`, s.blob, { contentType:"image/jpeg" });
+          file_url = sb.storage.from("library").getPublicUrl(`${stamp}-${safe}.jpg`).data.publicUrl;
+          thumb_url = file_url; kind="poster";
+        } else if(k==="pdf"){
+          const t = await pdfFirstPageThumb(f);
+          await sb.storage.from("library").upload(`${stamp}-${safe}`, f, { contentType:"application/pdf" });
+          await sb.storage.from("library").upload(`${stamp}-thumb.jpg`, t.blob, { contentType:"image/jpeg" });
+          file_url = sb.storage.from("library").getPublicUrl(`${stamp}-${safe}`).data.publicUrl;
+          thumb_url = sb.storage.from("library").getPublicUrl(`${stamp}-thumb.jpg`).data.publicUrl; kind="deck";
+        } else {
+          await sb.storage.from("library").upload(`${stamp}-${safe}`, f, { contentType: f.type||"text/plain" });
+          file_url = sb.storage.from("library").getPublicUrl(`${stamp}-${safe}`).data.publicUrl;
+          kind = k==="html" ? "other" : "other"; if(k==="html") tags=["html"];
+        }
+        const { data:row } = await sb.from("library_items").insert({ brand, title:f.name.replace(/\.[^.]+$/,""), kind, tags, file_url, thumb_url, source:"upload" }).select().single();
+        if(row) setItems(p=>[row,...p]);
+      } catch(e){ alert(`Could not add ${f.name}: ${e.message}`); }
     }
   }
 
   async function analyze(it){
+    const isHtml = (it.tags||[]).includes("html") || /\.html?$/i.test(it.file_url||"") || (it.file_url||"").endsWith(".htm");
     const system = buildBrandSystem(dna, learnings) + "\nYou are studying an existing piece of our work so it can guide future design. Be concrete about layout, palette, type, subject, and how on-brand it is. Keep it under 90 words. No em dashes.";
-    let b64, media_type="image/png";
-    if(LOCAL && it._file){ b64 = await fileToB64(it._file); media_type=it._file.type||"image/png"; }
+    if(isHtml){
+      let html="";
+      if(LOCAL && it._file){ html = await it._file.text(); }
+      else { const r = await fetch(it.file_url); html = await r.text(); }
+      const { text } = await fnCall("ai-text", { system, messages:[{role:"user",content:`Analyze this brand HTML page (design, copy, structure, on-brand fit):\n\n${html.slice(0,12000)}`}], max_tokens:600 });
+      setItems(p=>p.map(x=>x.id===it.id?{...x,ai_analysis:text}:x));
+      if(!LOCAL) await sb.from("library_items").update({ ai_analysis:text }).eq("id",it.id);
+      return;
+    }
+    // image or pdf-thumbnail -> vision
+    const imgUrl = it.thumb_url || it.file_url;
+    let b64, media_type="image/jpeg";
+    if(LOCAL && it._file && (it._file.type||"").startsWith("image/")){ b64 = await fileToB64(it._file); media_type=it._file.type; }
     else {
-      const res = await fetch(it.file_url); const blob = await res.blob(); media_type = blob.type||"image/png";
+      const res = await fetch(imgUrl); const blob = await res.blob(); media_type = blob.type||"image/jpeg";
       b64 = await new Promise((r,j)=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(",")[1]);fr.onerror=()=>j(new Error("read"));fr.readAsDataURL(blob);});
     }
-    const { text } = await fnCall("ai-vision", { system, b64, media_type, ask:"Analyze this Ugly Donuts brand material." });
+    const { text } = await fnCall("ai-vision", { system, b64, media_type, ask:`Analyze this ${dna.name||"brand"} material.` });
     setItems(p=>p.map(x=>x.id===it.id?{...x,ai_analysis:text}:x));
     if(!LOCAL) await sb.from("library_items").update({ ai_analysis:text }).eq("id",it.id);
   }
@@ -999,10 +1188,10 @@ function App() {
       setCreations(p=>[{ id:"c"+Math.random().toString(36).slice(2), task_type, brief, image_url:url, image_prompt },...p]);
       return;
     }
-    const path = `${Date.now()}-${task_type}.png`;
+    const path = `${brand}/${Date.now()}-${task_type}.png`;
     await sb.storage.from("creations").upload(path, b64ToBlob(b64), { contentType:"image/png" });
     const { data:pu } = sb.storage.from("creations").getPublicUrl(path);
-    const { data:row } = await sb.from("creations").insert({ task_type, brief, director_out, image_prompt, image_url:pu.publicUrl, status:"done" }).select().single();
+    const { data:row } = await sb.from("creations").insert({ brand, task_type, brief, director_out, image_prompt, image_url:pu.publicUrl, status:"done" }).select().single();
     if(row) setCreations(p=>[row,...p]);
   }
 
@@ -1012,10 +1201,10 @@ function App() {
       setItems(p=>[{ id:"l"+Math.random().toString(36).slice(2), title:brief.slice(0,40)||task_type, kind:"render", tags:[task_type], file_url:url, thumb_url:url, ai_analysis:"" },...p]);
       alert("Saved to Library."); return;
     }
-    const path = `${Date.now()}-lib-${task_type}.png`;
+    const path = `${brand}/${Date.now()}-lib-${task_type}.png`;
     await sb.storage.from("library").upload(path, b64ToBlob(b64), { contentType:"image/png" });
     const { data:pu } = sb.storage.from("library").getPublicUrl(path);
-    const { data:row } = await sb.from("library_items").insert({ title:brief.slice(0,60)||task_type, kind:"render", tags:[task_type], file_url:pu.publicUrl, thumb_url:pu.publicUrl, source:"studio" }).select().single();
+    const { data:row } = await sb.from("library_items").insert({ brand, title:brief.slice(0,60)||task_type, kind:"render", tags:[task_type], file_url:pu.publicUrl, thumb_url:pu.publicUrl, source:"studio" }).select().single();
     if(row){ setItems(p=>[row,...p]); alert("Saved to Library."); }
   }
 
@@ -1043,7 +1232,7 @@ function App() {
       setLearnings(p=>[{id:"k"+Math.random().toString(36).slice(2),kind,text,weight:1,active:true,examples:example?[example]:[],origin:origin||"feedback"},...p]);
       return;
     }
-    const { data:row } = await sb.from("learnings").insert({ kind, text, origin:origin||"feedback", examples:example?[example]:[] }).select().single();
+    const { data:row } = await sb.from("learnings").insert({ brand, kind, text, origin:origin||"feedback", examples:example?[example]:[] }).select().single();
     if(row) setLearnings(p=>[row,...p]);
   }
 
@@ -1128,8 +1317,13 @@ function App() {
     <div className="shell">
       <div className={"rail"+(railOpen?" open":"")}>
         <div className="rail-top">
-          <img src="/icons/logo.png" alt="Ugly" />
-          <div><div className="rt-name serif">Ugly Studio</div><div className="rt-sub">Brand</div></div>
+          <img src={dna.logo_url || brandOf(brand).logo} alt={brandOf(brand).name} onError={(e)=>{e.target.src="/icons/logo.png";}} />
+          <div><div className="rt-name serif">{brandOf(brand).short} Studio</div><div className="rt-sub">Brand</div></div>
+        </div>
+        <div className="brandsw">
+          {BRANDS.map(b=>(
+            <button key={b.slug} className={"bsw"+(brand===b.slug?" on":"")} onClick={()=>switchBrand(b.slug)}>{b.short}</button>
+          ))}
         </div>
         <div className="nav">
           {NAV.map(n=>(
@@ -1161,7 +1355,7 @@ function App() {
           <span className="ctx-tag">{dna.philosophy&&dna.philosophy.tagline}</span>
           <div className="ctx-dots">{dots.map((c,i)=><span key={i} style={{background:c.hex}} title={c.name}></span>)}</div>
         </div>
-        {nav==="dna"     && <BrandDNA dna={dna} setDna={setDna} saveDna={saveDna} />}
+        {nav==="dna"     && <BrandDNA dna={dna} setDna={setDna} saveDna={saveDna} setLogo={setLogo} />}
         {nav==="library" && <Library items={items} addItems={addItems} analyze={analyze} dna={dna} />}
         {nav==="studio"  && <Studio dna={dna} learnings={learnings} learn={learn} saveCreation={saveCreation} addToLibrary={addToLibrary} creations={creations} />}
         {nav==="learnings" && <Learnings learnings={learnings} addLearning={addLearning} toggleLearning={toggleLearning} removeLearning={removeLearning} />}

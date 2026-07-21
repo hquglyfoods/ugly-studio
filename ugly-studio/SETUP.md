@@ -63,6 +63,24 @@ strength chart; mute or delete any of them.
 - Ask the studio: the floating button opens a chat with the Brand Director on any screen.
 - Notifications: turn on from the rail, send a test to confirm delivery.
 
+
+## Two brands: Ugly and Umma
+The studio runs both Ugly Donuts and Umma's Recipe. Switch with the toggle at the top of the left
+rail. Each brand keeps its own Brand DNA, Library, Learnings, and creations, and the whole app
+re-themes to that brand's palette. Umma starts from a sensible placeholder DNA, edit it and upload
+the real logo in Brand DNA.
+
+## Uploads
+Library accepts images, PDFs, and HTML with no picker limit. On the way in the studio shrinks
+images (down to 2000px JPEG) and renders a PDF's first page as a thumbnail, so storage stays light
+while the original is kept. HTML is analyzed as text. Study any item to have Claude read it.
+Note: very large original PDFs are still stored full size; if needed, raise the per-file limit in
+Supabase (Storage settings).
+
+## Logo
+Upload each brand's wordmark in Brand DNA. It becomes the app logo for that brand. Ugly ships with
+its real wordmark. Umma has a placeholder until you upload the real one.
+
 ## Files
 - `index.html` .............. the whole app
 - `netlify/functions/` ...... ai-text, ai-image, ai-vision, push-notify, lib/push (all zero npm deps)
