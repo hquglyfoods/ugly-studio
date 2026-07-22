@@ -639,7 +639,7 @@ function Auth({ onIn }) {
 }
 
 /* ========================================================= BRAND DNA == */
-function BrandDNA({ dna, setDna, saveDna, setLogo, setBook }) {
+function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
   const [edit, setEdit] = useState(false);
   const [draft, setDraft] = useState(dna);
   const [busy, setBusy] = useState(false);
@@ -1633,7 +1633,7 @@ function App() {
           <span className="ctx-tag">{dna.philosophy&&dna.philosophy.tagline}</span>
           <div className="ctx-dots">{dots.map((c,i)=><span key={i} style={{background:c.hex}} title={c.name}></span>)}</div>
         </div>
-        {nav==="dna"     && <BrandDNA dna={dna} setDna={setDna} saveDna={saveDna} setLogo={setLogo} setBook={setBook} />}
+        {nav==="dna"     && <BrandDNA dna={dna} setDna={setDna} saveDna={saveDna} setLogo={setLogo} setBook={setBook} brand={brand} />}
         {nav==="library" && <Library items={items} addItems={addItems} analyze={analyze} setItemKind={setItemKind} deleteItem={deleteItem} dna={dna} />}
         {nav==="studio"  && <Studio dna={dna} learnings={learnings} learn={learn} saveCreation={saveCreation} addToLibrary={addToLibrary} creations={creations} />}
         {nav==="learnings" && <Learnings learnings={learnings} addLearning={addLearning} toggleLearning={toggleLearning} removeLearning={removeLearning} />}

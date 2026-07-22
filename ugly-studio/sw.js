@@ -1,12 +1,14 @@
-// Ugly Studio service worker: fast-open shell cache + web push + notification click + app badge.
-const CACHE = 'ugly-studio-v1';
+// Ugly Studio service worker.
+// index.html and navigations are NETWORK-FIRST so every deploy is picked up on reload.
+// Only versioned/stable assets (icons, pinned CDN libs) are cache-first.
+const CACHE = 'ugly-studio-v3';
 const SHELL = [
-  '/', '/index.html', '/manifest.webmanifest',
   '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png', '/icons/appicon.png', '/icons/logo.png',
   'https://unpkg.com/react@18.3.1/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js',
   'https://unpkg.com/@babel/standalone@7.26.4/babel.min.js',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+  'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js',
 ];
 self.addEventListener('install', (e) => {
   self.skipWaiting();
@@ -20,15 +22,31 @@ self.addEventListener('activate', (e) => {
   })());
 });
 
-// Cache-first for shell + CDN libs only. API / Supabase / functions always hit the network.
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  const isShell = url.origin === self.location.origin &&
-    (url.pathname === '/' || url.pathname === '/index.html' || url.pathname === '/manifest.webmanifest' || url.pathname.startsWith('/icons/'));
+
+  // App HTML / navigations: NETWORK-FIRST (always get the latest deploy; fall back to cache offline)
+  const isDoc = req.mode === 'navigate' ||
+    (url.origin === self.location.origin && (url.pathname === '/' || url.pathname === '/index.html'));
+  if (isDoc) {
+    e.respondWith((async () => {
+      try {
+        const net = await fetch(req, { cache: 'no-store' });
+        const c = await caches.open(CACHE); c.put('/index.html', net.clone());
+        return net;
+      } catch {
+        return (await caches.match('/index.html')) || (await caches.match('/')) || Response.error();
+      }
+    })());
+    return;
+  }
+
+  // Versioned / stable assets: cache-first
+  const isIcon = url.origin === self.location.origin && url.pathname.startsWith('/icons/');
   const isLib = ['unpkg.com', 'cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'].includes(url.hostname);
-  if (!isShell && !isLib) return;
+  if (!isIcon && !isLib) return;
   e.respondWith((async () => {
     const cached = await caches.match(req);
     const net = fetch(req).then((res) => { if (res && res.status === 200) caches.open(CACHE).then((c) => c.put(req, res.clone())); return res; }).catch(() => cached);
@@ -40,13 +58,7 @@ self.addEventListener('push', (event) => {
   let d = {};
   try { d = event.data ? event.data.json() : {}; } catch { d = { title: 'Ugly Studio', body: event.data && event.data.text() }; }
   const title = d.title || 'Ugly Studio';
-  const opts = {
-    body: d.body || '',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/badge.png',
-    tag: d.tag || 'ugly-studio',
-    data: { url: d.url || '/' },
-  };
+  const opts = { body: d.body || '', icon: '/icons/icon-192.png', badge: '/icons/badge.png', tag: d.tag || 'ugly-studio', data: { url: d.url || '/' } };
   event.waitUntil((async () => {
     await self.registration.showNotification(title, opts);
     if (typeof d.badge === 'number' && self.registration.setAppBadge) { try { d.badge > 0 ? self.registration.setAppBadge(d.badge) : self.registration.clearAppBadge(); } catch (e) {} }
