@@ -622,12 +622,15 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook }) {
         srcFile = new File([b], dna.brandbook.name||"brandbook", { type:b.type });
       }
       if(!srcFile){ alert("Upload a brand book first."); return; }
-      const isPdf = (srcFile.type||"").includes("pdf") || /\.pdf$/i.test(srcFile.name||"");
+      const k = fileKind(srcFile);
       const ask = "Read this brand book and return our Brand DNA as JSON. Ground every field in what the book actually says. Keep our no-em-dash rule.";
-      if(isPdf){
+      if(k==="pdf"){
         const text = await pdfExtractText(srcFile, 15000);
         const pages = await pdfPagesToBlocks(srcFile, 4);
         content = [...pages, { type:"text", text: `Brand book text:\n${text}\n\n${ask}` }];
+      } else if(k==="html"){
+        const html = await srcFile.text();
+        content = [{ type:"text", text: `Brand book (HTML source):\n${html.slice(0,15000)}\n\n${ask}` }];
       } else {
         const blk = await fileToImageBlock(srcFile, 1500);
         content = [blk.block, { type:"text", text: ask }];
@@ -704,19 +707,19 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook }) {
         <div className="card-h">Brand book</div>
         <div className="row" style={{alignItems:"center",gap:18}}>
           <div style={{width:70,height:88,borderRadius:10,border:"1px solid var(--line)",background:"var(--cream)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"'Fraunces',serif",fontSize:20,color:"var(--muted2)",letterSpacing:".08em"}}>
-            {dna.brandbook&&dna.brandbook.url?"PDF":"..."}
+            {dna.brandbook&&dna.brandbook.url?(/\.html?$/i.test(dna.brandbook.name||"")?"HTML":/\.(png|jpe?g|webp|gif)$/i.test(dna.brandbook.name||"")?"IMG":"PDF"):"..."}
           </div>
           <div style={{flex:1}}>
             {dna.brandbook&&dna.brandbook.name
               ? <p style={{fontSize:13.5,fontWeight:600,marginBottom:4}}>{dna.brandbook.name}</p>
               : null}
-            <p className="mut" style={{lineHeight:1.5,marginBottom:10}}>Upload the existing brand book (PDF or image). Keep it on record, and let Claude read it to draft this brand's DNA for you to review.</p>
+            <p className="mut" style={{lineHeight:1.5,marginBottom:10}}>Upload the existing brand book (PDF, image or HTML). Keep it on record, and let Claude read it to draft this brand's DNA for you to review.</p>
             <div className="row">
               <button className="btn btn-ghost btn-sm" onClick={()=>bookRef.current&&bookRef.current.click()} disabled={bookBusy}>{bookBusy?<span className="spin"></span>:null}{bookBusy?"Working":(dna.brandbook&&dna.brandbook.url?"Replace brand book":"Upload brand book")}</button>
               {(bookFile||(dna.brandbook&&dna.brandbook.url))&&<button className="btn btn-gold btn-sm" onClick={applyBook} disabled={bookBusy}>Read and draft DNA</button>}
               {dna.brandbook&&dna.brandbook.url&&<a className="btn btn-ghost btn-sm" href={dna.brandbook.url} target="_blank" rel="noreferrer">View</a>}
             </div>
-            <input ref={bookRef} type="file" accept="application/pdf,.pdf,image/*" className="hidden" onChange={onBook} />
+            <input ref={bookRef} type="file" accept="application/pdf,.pdf,image/*,text/html,.html,.htm" className="hidden" onChange={onBook} />
           </div>
         </div>
       </div>
