@@ -27,19 +27,20 @@ exports.handler = async (event) => {
   if (!messages.length) return { statusCode: 400, headers: cors, body: JSON.stringify({ error: "messages required" }) };
 
   try {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
+    const send = (useModel) => fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-api-key": key,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({ model, max_tokens, system, messages }),
+      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({ model: useModel, max_tokens, system, messages }),
     });
-    const data = await r.json();
+    let r = await send(model);
+    let data = await r.json();
+    // if a requested non-default model is unavailable, fall back to the default once
+    if (!r.ok && model !== MODEL && /model/i.test((data.error && data.error.message) || "")) {
+      r = await send(MODEL); data = await r.json();
+    }
     if (!r.ok) return { statusCode: r.status, headers: cors, body: JSON.stringify({ error: data.error?.message || "anthropic error", raw: data }) };
     const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
-    return { statusCode: 200, headers: cors, body: JSON.stringify({ text, model, usage: data.usage || null }) };
+    return { statusCode: 200, headers: cors, body: JSON.stringify({ text, model: data.model || model, usage: data.usage || null }) };
   } catch (e) {
     return { statusCode: 502, headers: cors, body: JSON.stringify({ error: String(e && e.message || e) }) };
   }

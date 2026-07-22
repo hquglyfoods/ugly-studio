@@ -278,6 +278,7 @@ const { useState, useEffect, useRef, useCallback } = React;
 const SUPABASE_URL  = "https://kqnserohxtzpjolgvhrk.supabase.co";
 const SUPABASE_ANON = "sb_publishable_6KTq8xbNOFzj1vSjYn-fWw_3MSqG0Yx";
 const VAPID_PUBLIC  = "BO4lvbB4leneMHIHksK-DrXUt4-b0b6PzEwhbijDAeC30LLvEiLAz5CT49S0boNto0GpcgE6NuyzOcx3RqeGCr8";
+const FAST_MODEL    = "claude-haiku-4-5-20251001";  // fast model for page-by-page brand book reading (stays within function timeout)
 const FN = "/.netlify/functions";
 const LOCAL = !SUPABASE_URL || SUPABASE_URL.indexOf("__") === 0;
 const sb = LOCAL ? null : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -422,11 +423,23 @@ const KIND_LABEL = { store:"store design", interior:"interior", poster:"poster",
 
 /* ========================================================= HELPERS ==== */
 async function fnCall(name, payload) {
-  const r = await fetch(`${FN}/${name}`, {
-    method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload)
-  });
-  const data = await r.json();
-  if (!r.ok) throw new Error(data.error || `${name} failed`);
+  let r;
+  try {
+    r = await fetch(`${FN}/${name}`, {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload)
+    });
+  } catch (e) {
+    throw new Error("Could not reach the studio. Check your connection and try again.");
+  }
+  const raw = await r.text();
+  let data = null;
+  if (raw) { try { data = JSON.parse(raw); } catch { data = null; } }
+  if (!r.ok || !data) {
+    if (r.status === 502 || r.status === 504 || (!data && !raw)) {
+      throw new Error("That took too long and timed out. Try a smaller file, or fewer pages at a time.");
+    }
+    throw new Error((data && data.error) || (raw ? raw.slice(0, 160) : `${name} failed (${r.status})`));
+  }
   return data;
 }
 function fileToB64(file) {
@@ -551,6 +564,22 @@ async function pdfPageBlock(pdf, i, maxW){
   return { type:"image", source:{ type:"base64", media_type:"image/jpeg", data:b64 } };
 }
 async function pdfPageText(pdf, i){ const pg = await pdf.getPage(i); const tc = await pg.getTextContent(); return tc.items.map(x=>x.str).join(" "); }
+// render a page to a JPEG blob (higher scale for legible small text and hex codes)
+async function pdfPageBlob(pdf, i, maxW){
+  const pg = await pdf.getPage(i); const base = pg.getViewport({ scale:1 });
+  const scale = Math.min((maxW||1400)/base.width, 2); const vp = pg.getViewport({ scale });
+  const cv = document.createElement("canvas"); cv.width=vp.width; cv.height=vp.height;
+  await pg.render({ canvasContext:cv.getContext("2d"), viewport:vp }).promise;
+  return await new Promise(r=>cv.toBlob(r, "image/jpeg", 0.85));
+}
+function htmlToText(html){
+  try {
+    const d = new DOMParser().parseFromString(html, "text/html");
+    d.querySelectorAll("script,style,noscript,svg").forEach(n=>n.remove());
+    const t = (d.body && (d.body.innerText || d.body.textContent)) || "";
+    return t.replace(/\n{3,}/g,"\n\n").trim() || html;
+  } catch { return html; }
+}
 function fileKind(file){
   const t = file.type || "";
   if (t.startsWith("image/")) return "image";
@@ -632,71 +661,65 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook }) {
     finally { setBookBusy(false); if(bookRef.current) bookRef.current.value=""; }
   }
   async function applyBook(){
-    const f = bookFile;
-    setBookBusy(true); setBookProgress("Opening the brand book...");
+    if(LOCAL){ alert("Connect the app to Supabase to read a brand book."); return; }
+    let srcFile = bookFile;
+    setBookBusy(true); setBookProgress("Preparing the brand book...");
     try {
-      let srcFile = f;
       if(!srcFile && dna.brandbook && dna.brandbook.url){
         const r = await fetch(dna.brandbook.url); const b = await r.blob();
         srcFile = new File([b], dna.brandbook.name||"brandbook", { type:b.type });
       }
-      if(!srcFile){ alert("Upload a brand book first."); return; }
+      if(!srcFile){ alert("Upload a brand book first."); setBookBusy(false); setBookProgress(""); return; }
+
+      const jobId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
       const k = fileKind(srcFile);
+      const up = async(path, blob, ct)=>{ const { error } = await sb.storage.from("library").upload(path, blob, { contentType:ct, upsert:true }); if(error) throw new Error(error.message); return sb.storage.from("library").getPublicUrl(path).data.publicUrl; };
 
-      // Pass 1: read the WHOLE book in batches and capture every detail as notes
-      const extractSys = "You are extracting a brand's complete guidelines from its official brand book. "+
-        "From the given pages capture EVERYTHING brand-relevant in exhaustive detail and do not summarize away specifics: "+
-        "mission and why, positioning, all taglines, the full color system (every color with its exact HEX, and CMYK/RGB/Pantone if shown, plus each color's role and where to use it), "+
-        "the typography system (every typeface, weights, sizes, tracking, and usage rules), logo usage (variations, minimum size, clear space, placement, and every misuse rule), "+
-        "imagery and photography style, iconography and graphic elements, tone of voice with real example phrases, all do and do-not rules, layout and spacing, and any brand applications shown. "+
-        "Output detailed plain-text notes organized under clear headings. Keep exact values verbatim. Never use em dashes.";
-      let notes = [];
+      let pages = [], book_text = "";
       if(k==="pdf"){
-        const pdf = await openPdf(srcFile);
-        const total = Math.min(pdf.numPages, 60);
-        const BATCH = 4;
-        for(let start=1; start<=total; start+=BATCH){
-          const end = Math.min(start+BATCH-1, total);
-          setBookProgress(`Reading pages ${start} to ${end} of ${total}...`);
-          const imgs = []; let txt = "";
-          for(let i=start;i<=end;i++){ imgs.push(await pdfPageBlock(pdf, i, 1200)); txt += `\n[page ${i}] `+await pdfPageText(pdf, i); }
-          const { text } = await fnCall("ai-text", { system:extractSys, messages:[{role:"user",content:[...imgs, {type:"text", text:`Pages ${start} to ${end}. Text layer for reference:\n${txt.slice(0,8000)}\n\nExtract every brand detail from these pages.`}]}], max_tokens:2500 });
-          notes.push(text);
+        const pdf = await openPdf(srcFile); const total = Math.min(pdf.numPages, 60);
+        for(let i=1;i<=total;i++){
+          setBookProgress(`Preparing page ${i} of ${total}...`);
+          const blob = await pdfPageBlob(pdf, i, 1400);
+          pages.push(await up(`${brand}/_bookpages/${jobId}/p${String(i).padStart(3,"0")}.jpg`, blob, "image/jpeg"));
+          book_text += `\n[page ${i}] ` + await pdfPageText(pdf, i);
         }
-        if(pdf.numPages>60) notes.push("(Note: the book has more than 60 pages; the first 60 were read.)");
       } else if(k==="html"){
-        setBookProgress("Reading the brand book...");
-        const html = await srcFile.text();
-        const { text } = await fnCall("ai-text", { system:extractSys, messages:[{role:"user",content:`Brand book HTML source:\n${html.slice(0,60000)}\n\nExtract every brand detail.`}], max_tokens:2500 });
-        notes.push(text);
+        book_text = htmlToText(await srcFile.text());
       } else {
-        setBookProgress("Reading the brand book...");
-        const blk = await fileToImageBlock(srcFile, 1600);
-        const { text } = await fnCall("ai-text", { system:extractSys, messages:[{role:"user",content:[blk.block, {type:"text", text:"Extract every brand detail from this page."}]}], max_tokens:2000 });
-        notes.push(text);
+        setBookProgress("Preparing the image...");
+        const s = await shrinkImage(srcFile, 1600, "image/jpeg", 0.85).catch(()=>({ blob:srcFile }));
+        pages.push(await up(`${brand}/_bookpages/${jobId}/p001.jpg`, s.blob, "image/jpeg"));
       }
 
-      // Pass 2: synthesize all notes into the DNA + a full guidelines reference
-      setBookProgress("Organizing everything into the Brand DNA...");
-      const synthSys = "You set a brand's DNA from detailed notes taken across its entire brand book. Return ONLY a JSON object with exactly this shape and nothing else: "+
-        '{"name": string, "philosophy": {"tagline": string, "why": string, "positioning": string}, '+
-        '"voice": {"tone": string, "dos": [string], "donts": [string]}, '+
-        '"typography": {"display": string, "body": string, "note": string}, '+
-        '"colors": [{"name": string, "hex": string, "role": string}], "guidelines": string}. '+
-        "colors must include EVERY color found with its exact hex and role. "+
-        "guidelines is a thorough, well-organized plain-text reference covering the ENTIRE brand book (logo usage and clear space and misuse, the full color system with all codes, the typography scale, imagery and iconography, tone of voice with examples, do and do-not, and applications) so nothing from the book is lost. "+
-        "Be comprehensive, keep exact values. Never use em dashes.";
-      const { text } = await fnCall("ai-text", { system:synthSys, messages:[{role:"user",content:`Notes from the full brand book:\n\n${notes.join("\n\n----\n\n").slice(0,60000)}\n\nProduce the complete brand DNA JSON now.`}], max_tokens:4000 });
-      const j = stripJSON(text);
-      if(j && j.philosophy){
-        const merged = { ...draft, ...j, logo_url: draft.logo_url, brandbook: draft.brandbook };
-        setDraft(merged); setEdit(true);
-        alert("Read the whole brand book and drafted your Brand DNA, including a full guidelines reference. Review and Save.");
-      } else {
-        alert("The book is stored, but I could not assemble structured DNA from it. You can edit the fields manually.");
-      }
-    } catch(err){ alert(err.message); }
-    finally { setBookBusy(false); setBookProgress(""); }
+      await sb.from("brandbook_jobs").insert({ id:jobId, brand, status:"pending", kind:k, pages, book_text:book_text.slice(0,120000) });
+      // fire the background reader (returns 202 immediately, then runs up to 15 minutes)
+      await fetch(`${FN}/brandbook-process-background`, { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify({ jobId }) }).catch(()=>{});
+
+      setBookProgress("Reading the brand book...");
+      const startedAt = Date.now();
+      const poll = async()=>{
+        if(Date.now()-startedAt > 15*60*1000){ setBookBusy(false); setBookProgress(""); alert("Reading is taking unusually long. Check back in a moment, the draft may still finish."); return; }
+        let data=null;
+        try { ({ data } = await sb.from("brandbook_jobs").select("status,progress,result,error").eq("id",jobId).maybeSingle()); } catch {}
+        if(data && data.progress) setBookProgress(data.progress);
+        if(data && data.status==="done"){
+          const j = data.result || {};
+          const merged = { ...draft, ...j, logo_url: draft.logo_url, brandbook: draft.brandbook };
+          setDraft(merged); setEdit(true); setBookBusy(false); setBookProgress("");
+          alert("Read the whole brand book and drafted your Brand DNA, including a full guidelines reference. Review and Save.");
+        } else if(data && data.status==="error"){
+          setBookBusy(false); setBookProgress("");
+          alert("Reading failed: " + (data.error || "unknown error"));
+        } else {
+          setTimeout(poll, 3000);
+        }
+      };
+      setTimeout(poll, 3000);
+    } catch(err){
+      setBookBusy(false); setBookProgress("");
+      alert(err.message || String(err));
+    }
   }
   const d = edit ? draft : dna;
   const upd = (path, val) => {
@@ -765,7 +788,7 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook }) {
               {dna.brandbook&&dna.brandbook.url&&<a className="btn btn-ghost btn-sm" href={dna.brandbook.url} target="_blank" rel="noreferrer">View</a>}
             </div>
             {bookBusy&&bookProgress&&<div className="mut" style={{marginTop:9,fontSize:12}}><span className="spin"></span>{bookProgress}</div>}
-            {!bookBusy&&<div className="mut" style={{marginTop:8,fontSize:11}}>Reads the whole book page by page. A long book can take a minute.</div>}
+            {!bookBusy&&<div className="mut" style={{marginTop:8,fontSize:11}}>Reads the entire book with the accurate model in the background. A long book can take a few minutes, you can keep working and it will finish.</div>}
             <input ref={bookRef} type="file" accept="application/pdf,.pdf,image/*,text/html,.html,.htm" className="hidden" onChange={onBook} />
           </div>
         </div>

@@ -12,6 +12,7 @@ Same stack as your other apps: single-file React + Babel 7, Supabase, Netlify. N
    - `supabase_schema.sql`     (brand DNA, library, creations, storage, RLS)
    - `supabase_learnings.sql`  (the taste memory)
    - `supabase_push.sql`       (push subscriptions)
+   - `supabase_brandbook.sql`  (brand book reading jobs)
 3. Storage: confirm the `library` and `creations` buckets exist and are public.
 4. Authentication: add one user, `hq@uglydonutsncorndogs.com`, with a password. That is the HQ login.
 5. Project settings, API: copy the Project URL, the anon public key, and the service_role key.
@@ -114,12 +115,15 @@ manual re-run). Each tile shows Studying while it works. Every tile has Re-study
 category dropdown to reclassify at any time.
 
 
-## Brand book absorbs the whole book now
-Read and draft DNA reads the entire brand book page by page (in batches, up to 60 pages), captures
-every detail (all color codes, the full type scale, logo usage and clear space, imagery, tone with
-examples, do and do-not), then organizes it into the DNA plus a Full brand book guidelines field.
-Progress shows while it reads, and a long book can take a minute. The crew reads those full
-guidelines on every Studio job and every analysis, so nothing from the book is missed. Review and Save.
+## Brand book: accurate full read, no timeouts
+Read and draft DNA reads the ENTIRE brand book with the accurate model (claude-opus-4-8). The app
+renders and uploads the pages, then a background function reads the whole book (up to 15 minutes, so
+there is no 10 second timeout), captures every detail (all color codes, the full type scale, logo
+usage and clear space, imagery, tone with examples, do and do-not), and writes the result. The app
+shows live progress (Reading pages 5 to 7 of 24...) and you can keep working while it runs. When it
+finishes it fills the DNA plus a Full brand book guidelines field for you to review and Save. The crew
+then reads those full guidelines on every job. Requires SUPABASE_SERVICE_KEY, SUPABASE_URL and
+ANTHROPIC_API_KEY in Netlify (same ones used for push and AI).
 
 ## Files
 - `index.html` .............. the whole app
