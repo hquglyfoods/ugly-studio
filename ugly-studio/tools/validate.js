@@ -32,9 +32,9 @@ if (css) {
 
 // 3. em-dash guard (hard brand rule: none anywhere)
 console.log("\n[3] Em-dash guard (brand rule)");
-const files = ["index.html", "sw.js", "supabase_schema.sql", "supabase_learnings.sql", "supabase_push.sql",
+const files = ["index.html", "sw.js", "supabase_schema.sql", "supabase_learnings.sql", "supabase_push.sql", "supabase_brandbook.sql",
   "netlify/functions/ai-text.js", "netlify/functions/ai-image.js", "netlify/functions/ai-vision.js",
-  "netlify/functions/push-notify.js", "netlify/functions/lib/push.js"];
+  "netlify/functions/push-notify.js", "netlify/functions/lib/push.js", "netlify/functions/brandbook-process-background.js"];
 let dash = 0;
 for (const f of files) {
   const t = fs.readFileSync(path.join(root, f), "utf8");
@@ -43,8 +43,18 @@ for (const f of files) {
 }
 if (!dash) ok("no em-dashes in any deliverable");
 
-// 4. node --check each function (spawned separately below)
-console.log("\n[4] Function syntax checked separately (see run script)\n");
+// 4. scope check (undefined identifiers anywhere, including inside event handlers)
+console.log("\n[4] Scope check (undefined identifiers)");
+try {
+  const { execSync } = require("child_process");
+  process.stdout.write(execSync(`node ${path.join(__dirname, "scopecheck.js")}`, { encoding: "utf8" }));
+} catch (e) {
+  if (e.stdout) process.stdout.write(e.stdout);
+  bad("scope check found undefined identifiers");
+}
+
+// 5. node --check each function (spawned separately below)
+console.log("\n[5] Function syntax checked separately (see run script)\n");
 
 console.log(fail ? `\x1b[31mFAILED: ${fail} issue(s)\x1b[0m\n` : "\x1b[32mALL CHECKS PASSED\x1b[0m\n");
 process.exit(fail ? 1 : 0);

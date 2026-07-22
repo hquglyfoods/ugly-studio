@@ -451,11 +451,27 @@ function fileToB64(file) {
   });
 }
 function stripJSON(t) {
+  if (!t) return null;
   const m = t.match(/```(?:json)?([\s\S]*?)```/);
   let s = (m ? m[1] : t).trim();
   const a = s.indexOf("{"), b = s.lastIndexOf("}");
   if (a >= 0 && b > a) s = s.slice(a, b + 1);
-  try { return JSON.parse(s); } catch { return null; }
+  try { return JSON.parse(s); } catch {}
+  // fallback: repair a truncated object by closing dangling string + open brackets in reverse order
+  const start = t.indexOf("{"); if (start < 0) return null;
+  let r = t.slice(start).replace(/[\s,]+$/, "");
+  const stack = []; let inStr = false, esc = false;
+  for (let i = 0; i < r.length; i++) {
+    const c = r[i];
+    if (inStr) { if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') inStr = false; continue; }
+    if (c === '"') inStr = true;
+    else if (c === "{" || c === "[") stack.push(c);
+    else if (c === "}" || c === "]") stack.pop();
+  }
+  if (inStr) r += '"';
+  r = r.replace(/[\s,]+$/, "");
+  for (let i = stack.length - 1; i >= 0; i--) r += stack[i] === "{" ? "}" : "]";
+  try { return JSON.parse(r); } catch { return null; }
 }
 function b64ToBlob(b64, mime = "image/png") {
   const bin = atob(b64); const arr = new Uint8Array(bin.length);
@@ -994,7 +1010,7 @@ function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }
         `"image_prompt": string (a full, vivid art-direction prompt for the image model, describing composition, subject, lighting, mood, and any on-image text; must reflect the palette and restraint),`+
         `"notes": string (why this works for the brand)}`;
       const content = refs.length ? [...refs.map(r=>r.block), { type:"text", text:ask }] : ask;
-      const { text } = await fnCall("ai-text", { system, messages:[{role:"user",content}] });
+      const { text } = await fnCall("ai-text", { system, messages:[{role:"user",content}], max_tokens:1600 });
       const j = stripJSON(text) || { concept:text, headline:"", subhead:"", cta:"", image_prompt:brief, notes:"" };
       setDir(j);
       setPrompt((j.image_prompt||brief) + IMG_STYLE_SUFFIX);
