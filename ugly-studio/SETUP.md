@@ -113,6 +113,14 @@ Uploads are studied automatically now, no need to press Study with Claude (that 
 manual re-run). Each tile shows Studying while it works. Every tile has Re-study and Delete, and a
 category dropdown to reclassify at any time.
 
+
+## Brand book absorbs the whole book now
+Read and draft DNA reads the entire brand book page by page (in batches, up to 60 pages), captures
+every detail (all color codes, the full type scale, logo usage and clear space, imagery, tone with
+examples, do and do-not), then organizes it into the DNA plus a Full brand book guidelines field.
+Progress shows while it reads, and a long book can take a minute. The crew reads those full
+guidelines on every Studio job and every analysis, so nothing from the book is missed. Review and Save.
+
 ## Files
 - `index.html` .............. the whole app
 - `netlify/functions/` ...... ai-text, ai-image, ai-vision, push-notify, lib/push (all zero npm deps)
