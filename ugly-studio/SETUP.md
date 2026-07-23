@@ -124,16 +124,12 @@ voice (tone, named traits, sound like and never sound like, and per-context exam
 lines and naming conventions, the logo system (marks, clear space, misuse rules), illustration,
 photography direction with the full shoot spec, and signage. The crew reads all of it on every job.
 
-## Brand documents are the source of truth
-In Brand DNA, upload everything the studio should know by heart: the brand book, the menu book, a
-signage spec, anything. PDF and HTML are both accepted and you can select several at once. Each
-document is absorbed word for word, nothing is rewritten or summarized, and you never retype it into
-the fields. On every job the crew reads all of them first, each one labelled by filename, and if
-anything in the summary cards disagrees with a document, the document wins. HTML and text based PDFs
-are read instantly in the browser. A scanned book or an image is transcribed page by page by the
-accurate model in a background function (up to 15 minutes, no timeout), with short bracketed notes
-for logos and other visual elements. Each row shows how much was absorbed, with View, Re-absorb and
-Forget. An older single brand book upload migrates into this list automatically.
+## Brand DNA is your files, nothing else
+The Brand DNA tab holds the files you upload and nothing invented. Upload the brand book, the menu
+book, a signage spec, anything the studio should know by heart. PDF or HTML, several at once. Each
+file is read word for word and used on every job, and tapping a file opens it. If no file has been
+uploaded, the crew says so rather than guessing at rules. Anything you type into the optional notes
+is carried too, marked as a note, so the files always outrank it.
 
 
 ## Library keeps your original files
@@ -147,13 +143,6 @@ Each task starts on a sensible default (posters portrait, storefronts landscape,
 you can change it before directing. The director composes for the shape you picked.
 
 
-## Your saved DNA never hides a section
-Brand DNA is merged over the brand's baseline instead of replacing it. Anything you wrote or the
-brand book reader extracted always wins, and any section you have not filled in falls back to the
-baseline, so an older or partial document can never blank out a chapter. Matching entries are also
-completed, for example a color you already had picks up its Pantone and its never-use rule.
-In edit mode, Fill from brand book adds back anything missing (colors, lines, logo marks and so on)
-without removing or rewording a single thing you wrote.
 
 
 ## Viewing a document
@@ -161,6 +150,13 @@ View opens the document inside the studio. HTML brand books render as the real p
 source code, PDFs open in the reader, and images display directly. There is also Open in new tab.
 Files are stored with a correct content type even when the phone reports a blank one, which is what
 made an HTML book appear as raw code before.
+
+
+## Navigation
+On a phone the studio uses a bottom tab bar (Brand DNA, Library, Studio, Learnings, More), sized for
+thumbs and clear of the home indicator. More holds the account items: install, notifications, test
+notification and sign out. On a desktop the left rail stays as it was. The brand toggle sits at the
+top right on every screen, one tap to move between Ugly and Umma.
 
 ## Files
 - `index.html` .............. the whole app

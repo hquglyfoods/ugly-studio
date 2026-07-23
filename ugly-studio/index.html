@@ -77,13 +77,20 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .docview-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--paper);}
 .docview-b{flex:1;overflow:auto;background:#fff;-webkit-overflow-scrolling:touch;}
 @media(min-width:821px){.docview{max-width:1100px;margin:0 auto;height:92vh;border-radius:16px;}}
-.docrow{display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:center;background:var(--paper);padding:11px 14px;}
+.doc-open{display:grid;grid-template-columns:46px 1fr;gap:12px;align-items:center;background:none;border:none;
+  font-family:inherit;text-align:left;padding:0;width:100%;}
+.doc-open:disabled{opacity:.6;}
+.doc-open:hover .doc-n{color:var(--gold-deep);}
+.doc-m{display:flex;flex-direction:column;min-width:0;}
+.emptybox{background:var(--cream);border:1px dashed var(--line2);border-radius:10px;padding:18px;text-align:center;
+  color:var(--muted);font-size:13px;margin-bottom:12px;}
+.docrow{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--paper);padding:11px 14px;}
 .doc-i{font-family:'Fraunces',serif;font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted2);
   border:1px solid var(--line2);border-radius:7px;padding:6px 0;text-align:center;}
 .doc-n{font-weight:600;font-size:13px;line-height:1.35;word-break:break-word;}
 .doc-s{font-size:11.5px;color:var(--muted);margin-top:2px;}
 .doc-a{display:flex;gap:11px;align-items:center;}
-@media(max-width:620px){.docrow{grid-template-columns:40px 1fr;}.doc-a{grid-column:1/-1;}}
+@media(max-width:620px){.docrow{grid-template-columns:1fr;}.doc-a{grid-column:1/-1;}}
 .absorbed{display:flex;align-items:center;gap:8px;background:#f2f7f2;border:1px solid #d8e6d8;border-radius:9px;
   padding:9px 12px;margin-bottom:10px;font-size:12.5px;color:#2f5d3a;line-height:1.45;}
 .ab-dot{width:8px;height:8px;border-radius:50%;background:#3f8b52;flex-shrink:0;}
@@ -99,39 +106,16 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .sz-3-2{width:28px;height:19px;}
 .sz-l{font-size:12px;font-weight:600;color:var(--ink);}
 .sz-r{font-size:10.5px;color:var(--muted);}
-.specline{font-size:13.5px;line-height:1.6;color:var(--ink-soft);margin-top:6px;max-width:680px;}
-.specline b{color:var(--ink);font-weight:600;margin-right:6px;}
-.pullq{font-size:16px;line-height:1.6;color:var(--ink);margin:14px 0;padding-left:14px;border-left:3px solid var(--gold);font-style:italic;max-width:660px;}
+
 .ruleblock{background:var(--cream);border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--ink-soft);}
 .ruleblock b{color:var(--ink);margin-right:5px;}
-.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:16px;}
-.pillar{background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:12px 13px;}
-.pillar-n{font-weight:600;font-size:13px;margin-bottom:4px;}
-.pillar-d{font-size:12px;line-height:1.5;color:var(--muted);}
-.sw-never{font-size:11px;color:var(--brick);margin-top:3px;line-height:1.4;}
-.traits{display:grid;gap:8px;margin-top:12px;}
-.trait{font-size:12.5px;line-height:1.5;color:var(--muted);}
-.trait b{color:var(--ink);margin-right:6px;}
-.mini-h{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);font-weight:700;margin-bottom:6px;}
-.tagrow{display:flex;flex-wrap:wrap;gap:5px;}
+
 .ttag.off{background:#fdf0ee;color:var(--brick);}
 .specgrid{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
-.specrow{display:grid;grid-template-columns:210px 1fr;gap:14px;background:var(--paper);padding:11px 14px;}
-.spec-a{font-weight:600;font-size:13px;line-height:1.4;}
-.spec-b{display:flex;flex-direction:column;font-size:12.5px;line-height:1.55;color:var(--muted);}
-.spec-b b{color:var(--gold-deep);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;}
-.never-t{color:var(--brick);margin-top:3px;}
-.fld-err{border-color:var(--brick);}
+
 @media(max-width:760px){.specrow{grid-template-columns:1fr;gap:4px;}}
-.rail-x{display:none;margin-left:auto;background:none;border:none;font-size:20px;line-height:1;color:var(--muted);padding:6px 4px;align-self:flex-start;}
-.rail-x:hover{color:var(--ink);}
-.rail-scrim{position:fixed;inset:0;background:rgba(33,28,22,.42);z-index:35;}
-@media(max-width:820px){.rail-x{display:inline-flex;}}
-@media(min-width:821px){.rail-scrim{display:none;}}
-.brandsw{display:flex;gap:5px;padding:12px 14px 4px;}
-.bsw{flex:1;padding:8px 6px;border-radius:9px;border:1px solid var(--line2);background:#fff;font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);transition:all .12s;}
-.bsw:hover{border-color:var(--gold-deep);}
-.bsw.on{background:var(--ink);color:var(--gold);border-color:var(--ink);}
+@media(max-width:820px){}
+@media(min-width:821px){}
 .nav{padding:14px 12px;display:flex;flex-direction:column;gap:2px;flex:1;}
 .nav-item{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;color:var(--ink-soft);
   font-size:13.5px;font-weight:500;background:none;border:none;text-align:left;width:100%;transition:background .12s,color .12s;}
@@ -147,6 +131,29 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 
 .main{flex:1;min-width:0;display:flex;flex-direction:column;}
 /* brand context bar: the brand is always in the room */
+.brandtoggle{display:inline-flex;background:var(--cream);border:1px solid var(--line2);border-radius:999px;padding:3px;gap:2px;flex-shrink:0;}
+.bt-opt{padding:6px 13px;border-radius:999px;border:none;background:none;font-family:inherit;font-size:12px;font-weight:600;
+  color:var(--muted);transition:all .14s;}
+.bt-opt.on{background:var(--ink);color:var(--gold);}
+.ctx-mark{width:26px;height:26px;object-fit:contain;flex-shrink:0;}
+.only-mobile{display:none;}
+.tabbar{display:none;}
+@media(max-width:820px){
+  .only-mobile{display:block;}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(255,255,255,.96);
+    backdrop-filter:saturate(180%) blur(12px);border-top:1px solid var(--line);
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom));}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;background:none;border:none;
+    font-family:inherit;color:var(--muted2);transition:color .12s;}
+  .tab .tab-ic{font-size:17px;line-height:1;}
+  .tab .tab-l{font-size:10px;font-weight:600;letter-spacing:.01em;}
+  .tab.on{color:var(--ink);}
+  .tab.on .tab-ic{color:var(--gold-deep);}
+  .main{padding-bottom:calc(74px + env(safe-area-inset-bottom));}
+  .fab{bottom:calc(84px + env(safe-area-inset-bottom));}
+}
+.sheet-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);}
+.sheet-t{font-size:16px;font-weight:600;flex:1;}
 .ctxbar{display:flex;align-items:center;gap:16px;padding:12px 30px;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5;}
 .ctx-tag{font-family:'Fraunces',serif;font-style:italic;font-size:15px;color:var(--ink);}
 .ctx-dots{display:flex;gap:5px;margin-left:auto;}
@@ -160,20 +167,6 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .card-h{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:14px;}
 
 /* palette */
-.pal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
-.sw{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;}
-.sw-chip{height:66px;}
-.sw-body{padding:10px 12px;}
-.sw-name{font-weight:600;font-size:13px;}
-.sw-hex{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;text-transform:uppercase;}
-.sw-role{font-size:11px;color:var(--muted2);margin-top:4px;line-height:1.35;}
-
-.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
-.dolist{list-style:none;display:flex;flex-direction:column;gap:9px;}
-.dolist li{display:flex;gap:9px;font-size:13px;line-height:1.45;color:var(--ink-soft);}
-.dolist .mk{flex-shrink:0;font-weight:700;}
-.do .mk{color:var(--ok);}
-.dont .mk{color:var(--brick);}
 
 /* library */
 .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;}
@@ -253,13 +246,11 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .mut{color:var(--muted);font-size:12.5px;}
 .hidden{display:none;}
 @media(max-width:820px){
-  .rail{position:fixed;z-index:40;transform:translateX(-100%);transition:transform .2s;}
-  .rail.open{transform:none;}
+  .rail{display:none;}
   .two{grid-template-columns:1fr;} .crew{flex-direction:column;} .crew-arrow{transform:rotate(90deg);}
   .wrap{padding:20px 16px;} .ctxbar{padding:12px 16px;}
 }
-.burger{display:none;}
-@media(max-width:820px){.burger{display:inline-flex;}}
+@media(max-width:820px){}
 
 /* ===== BOOT SPLASH (pre-React) ===== */
 .boot-splash{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--cream);z-index:200;}
@@ -353,234 +344,14 @@ function brandOf(slug){ return BRANDS.find(b=>b.slug===slug) || BRANDS[0]; }
 /* ========================================================= BRAND DNA == */
 const DEFAULT_DNA = {
   name: "Ugly Donuts & Corn Dogs",
-  philosophy: {
-    tagline: "A bite to remember",
-    mission: "We exist to make Korean corn dogs and donuts a staple American meal, not street food, not a trend.",
-    feeling: "\"I found something special.\" A bite to remember.",
-    why: "This brand began with a memory from thirty years ago. A little boy walked beside his mother to a corn dog stand. It was warm in his hands, and he never forgot it. We are not selling food. We are giving people a memory they carry for the rest of their lives.",
-    founder_words: "Food is something people share with who they love. That is what we want to be part of, one order at a time.",
-    heritage: "The Korean corn dog exists because of an American kindness. During the Korean War, American troops shared corn dogs with Korean civilians who had very little. Korea took that gesture and made it its own. Two cultures, one food.",
-    cultural_gesture: "In South Korea, giving something with both hands is a gesture of respect and gratitude. Every handover is a cultural gesture of respect.",
-    story_order: "The brand story is always told memory first. Layer 1: the founder's childhood memory (personal, emotional). Layer 2: the heritage story (cultural, historical). Never lead with the history.",
-    positioning: "A category of one. Not fast food, not street food. A handcrafted meal experience that stands on its own, premium without coldness.",
-    positioning_rule: "Ugly Donuts is never framed as street food and never compared to fast food. We are not another quick service brand.",
-    pillars: [
-      { name: "A Category of One", desc: "Not fast food. Not street food. A handcrafted meal experience that stands on its own, premium without coldness." },
-      { name: "Premium Warmth", desc: "High quality without coldness. Premium, but feels like it was made for you." },
-      { name: "Memory-Driven", desc: "Every touchpoint should feel like a core memory in the making." },
-      { name: "Korean-American Story", desc: "Two cultures, one food. Every handover is a cultural gesture of respect." }
-    ]
-  },
-  colors: [
-    { name: "Golden Tan",  hex: "#EABF70", role: "Primary point color, straight from the logo. Warmth and craft. Italic headlines, editorial accents.", never: "Body copy, insufficient contrast on white." },
-    { name: "Brand Orange", hex: "#e1661a", role: "Logo ampersand, CTAs, accent labels, campaign highlights.", never: "Large background blocks, too aggressive." },
-    { name: "Brick Red",   hex: "#B23A2E", role: "Accent. Appetite, heat, the fried edge.", never: "Backgrounds or large fields." },
-    { name: "Ink Black",   hex: "#1A1512", role: "Wordmark, text, and digital dark backgrounds. Confidence, not coldness.", never: "Packaging dark fields, use Deep Navy instead." },
-    { name: "Deep Navy",   hex: "#141b4d", pantone: "PMS 2766C", role: "Packaging, print, physical materials.", never: "Digital backgrounds, use Ink Black instead." },
-    { name: "Cream",       hex: "#FBF7EF", role: "Background. Space to breathe.", never: "Text at any size." },
-    { name: "Paper",       hex: "#FFFFFF", role: "Clean base that lets the product be the hero.", never: "" },
-    { name: "Warm Grey",   hex: "#a8a7a1", role: "Body text on dark backgrounds.", never: "Body text on light, too low contrast." }
-  ],
-  color_rule: "The two darks rule: Ink Black (#1A1512) is the everyday dark for wordmark, text and digital backgrounds. Deep Navy (PMS 2766C) is the packaging and print dark. Do not swap them.",
-  typography: {
-    display: "Cinzel, Regular and Italic. All headlines, subheads, pull quotes, taglines.",
-    body: "Quicksand, 400 and 500. All body copy, menus, descriptions, captions, packaging text.",
-    note: "Italic Cinzel in Golden Tan (#EABF70) signals emotional emphasis. Three typefaces, each has one job, never mix roles.",
-    fonts: [
-      { name: "Neue Einstellung", role: "Wordmark only", weights: "Thin, wide tracking", rule: "Never use for any copy. Logo files only." },
-      { name: "Cinzel", role: "All headlines, subheads, pull quotes, taglines", weights: "Regular, Italic", rule: "Italic plus Gold (#EABF70) equals emotional emphasis." },
-      { name: "Quicksand", role: "All body copy, menus, descriptions, captions", weights: "400, 500", rule: "Primary readability font across all contexts." }
-    ],
-    script_note: "The handwritten \"ugly\" script is an illustrative logo element, not a typeface. It exists only as a logo file."
-  },
-  voice: {
-    tone: "Confident, warm, punchy, story led. Premium casual with a heartbeat. We say it once, clearly, and never apologize for being premium.",
-    traits: [
-      { name: "Confident", desc: "We do not explain ourselves. We do not apologize for being premium. We say it once, clearly." },
-      { name: "Warm", desc: "Never cold or corporate. The brand has a heartbeat. Copy should feel personal, not polished." },
-      { name: "Punchy", desc: "Short sentences. Strong verbs. No filler words. If it can be said in 5 words, use 5." },
-      { name: "Story-Led", desc: "Every piece of copy has a memory or moment behind it. Facts live inside stories." }
-    ],
-    sound_like: ["Confident","Warm","Specific","Memorable","Moody","Premium-casual","Story-driven"],
-    never_sound_like: ["Corporate","Street food","Over-excited","Generic","Apologetic"],
-    contexts: [
-      { context: "Instagram caption", tone: "Moody, punchy, 1 to 2 lines", example: "Some things are just better fresh." },
-      { context: "Menu description", tone: "Specific, sensory, no fluff", example: "Hand-stretched. Fried in avocado oil. Finished with a crack of salt." },
-      { context: "Campaign headline", tone: "Bold, declarative, no question marks", example: "Fried Better." },
-      { context: "Press and PR", tone: "Authoritative, category defining", example: "Ugly Donuts is building the next great American meal category." },
-      { context: "Packaging", tone: "Warm, intimate, one sentence", example: "A bite to remember." },
-      { context: "Drinks", tone: "Soft, poetic, memory forward", example: "When a sip becomes a memory." }
-    ],
-    dos: [
-      "Lead with the memory and the feeling before any product or offer detail",
-      "Short sentences, strong verbs, no filler. Five words beat ten.",
-      "Keep facts inside stories, never a spec sheet",
-      "Let the product photography carry the moment"
-    ],
-    donts: [
-      "No em dashes, ever. Use commas, periods, parentheses or colons.",
-      "Never call us street food and never compare us to fast food",
-      "No hype, no discount urgency, no over-excitement",
-      "Never improvise new taglines, use the official lines only",
-      "Never recreate the wordmark as text or CSS"
-    ]
-  },
-  taglines: [
-    { line: "A bite to remember", kind: "Primary tagline", use: "Default on all materials. Packaging, lockups, storefront, website, campaign sign-offs." },
-    { line: "Individually handcrafted", kind: "Product promise", use: "Packaging tagline, sub-wordmark on boxes. Signals quality and care." },
-    { line: "Love at first bite", kind: "Secondary tagline", use: "Social media, campaign headlines, in-store moments. Warmer, more playful." },
-    { line: "When a sip becomes a memory.", kind: "Drink-specific line", use: "Cup packaging, drink menu, drink campaign materials only." },
-    { line: "Good things stay forever.", kind: "Memory line", use: "Story page, brand storytelling, packaging inserts. Pairs with the founder memory." },
-    { line: "Every store. Same standard.", kind: "Operations promise", use: "Locations page, franchise materials, training. Signals consistency at scale." },
-    { line: "Simple ingredients. Honest work.", kind: "Craft line", use: "Craft and process storytelling, menu boards, behind the scenes content." },
-    { line: "Since 2021", kind: "Establishment marker", use: "Circle badge, small print, Est. 2021 variant on the logo badge." }
-  ],
-  tagline_rule: "Memory is the theme. Every official line touches the idea of memory. These are the only lines, do not improvise variations.",
-  naming: [
-    { pattern: "The Ug prefix", rule: "Proprietary products get the Ug- treatment, it makes generic categories ownable.", examples: "Ugnut, Ugbite Set, Ugly Boba, Ugly Bar" },
-    { pattern: "Corn dogs", rule: "[Topping or Style] plus \"Corn Dog\", descriptive, no invented names.", examples: "Hot Cheetos Corn Dog, Potato Corn Dog, Nude Corn Dog" },
-    { pattern: "Drinks", rule: "Evocative two-word names, a mood, not a description.", examples: "Midnight Lemonade, Dragon Passion, Sunset Peach, Taro Cloud" },
-    { pattern: "Quality anchor", rule: "Drink descriptions lead with \"premium real fruit syrup\" as the consistency signal.", examples: "Used across Refreshers, Boba, Coco Sips" }
-  ],
-  audience: {
-    target: "",
-    market_position: "",
-    edge: "",
-    not_for: ""
-  },
-  logo: {
-    marks: [
-      { name: "Horizontal wordmark (color)", use: "Primary. Wide contexts: headers, banners, storefront signage.", file: "SVG, PNG" },
-      { name: "Horizontal wordmark (white)", use: "Dark backgrounds, navy base.", file: "SVG, PNG" },
-      { name: "Stacked wordmark (color + white)", use: "Square formats: cups, social profile, packaging panels.", file: "SVG, PNG" },
-      { name: "\"ugly\" script mark", use: "Standalone handwritten script. Casual contexts, social overlays, merch.", file: "SVG, PNG transparent" },
-      { name: "Circle badge, dark", use: "Corn dog and donut icon inside a circle, EST. 2021 at the base. On dark backgrounds.", file: "SVG, EPS" },
-      { name: "Circle badge, light", use: "Color illustration version on light or cream backgrounds. Golden tan food illustration.", file: "SVG, EPS" },
-      { name: "Avocado oil seal, light", use: "\"We Fry In 100% Avocado Oil\", olive green on cream. Packaging and marketing.", file: "SVG, PNG" },
-      { name: "Avocado oil seal, dark", use: "Cream or warm grey on dark. Dark mode packaging and digital contexts.", file: "SVG, PNG" },
-      { name: "Favicon / app icon", use: "The ampersand mark or circle badge, square.", file: "PNG 512px, ICO" }
-    ],
-    clear_space: "Always maintain minimum clear space equal to the cap height of the U in UGLY on all four sides.",
-    never: [
-      "Stretch or distort the wordmark",
-      "Recolor the ampersand to anything other than #e1661a",
-      "Recreate the logo in any other typeface",
-      "Place the color wordmark on a busy photo without a clear field"
-    ]
-  },
-  illustration: {
-    style: "All brand illustrations are black line art on white. Clean, hand-drawn feel, no fills, except the color circle badge version.",
-    items: [
-      { name: "The Donut Duo", use: "Two donut characters handing a box with both hands, the Korean two-handed gift gesture. Packaging insert, cultural storytelling, social content.", never: "Campaign hero images, too small to read." },
-      { name: "Corn Dog Handover", use: "Woman handing an oversized corn dog to an excited child. Warmth, joy, discovery. Packaging exterior, banners, web hero.", never: "Dark navy backgrounds, white lines disappear." },
-      { name: "Dancing Donuts", use: "Donut characters in motion. Playful energy for social, stickers, merch, animated content.", never: "Formal press or editorial materials." },
-      { name: "Doodle Wall Art", use: "Dense illustrated world with \"The Finest Ingredients\" and \"Taste of Korea\" woven in. In-store walls, background texture, large print.", never: "Small formats, illegible at small size." }
-    ]
-  },
-  photography: {
-    principles: [
-      { name: "Moody and dramatic", desc: "Dark backgrounds, controlled light sources, heavy shadows. Food as subject, not prop." },
-      { name: "Story over perfection", desc: "Real moments, real texture. Not overly styled or sanitized. Authentic, not amateur." },
-      { name: "Warm color grading", desc: "Golden, amber tones. No cold blue-grey filters. Every image should feel warm." },
-      { name: "What we avoid", desc: "Flat lays with props, bright white studio lighting, overly clean ad aesthetics, stock-photo feel." }
-    ],
-    brief: "Late-night diner energy meets editorial magazine. The food looks like it was made 30 seconds ago.",
-    spec: {
-      product: "The hero of every frame, always freshly made. Crisp textures, rich fillings, glossy finishes, natural melting.",
-      lighting: "Soft directional studio key light, natural highlights, rich shadows, gentle reflections, warm cinematic depth.",
-      surfaces: "Restrained neutral palette so the food stays the focus: charcoal, warm gray, espresso brown, taupe, natural stone.",
-      composition: "Hero product focus, generous negative space, clean hierarchy, balanced editorial framing, minimal distractions.",
-      typography: "Elegant serif headline, modern sans-serif support, minimal copy, in white or champagne gold. Type supports the food.",
-      feel: "Premium without formal, modern without cold, minimal without empty, playful without childish. Warm and inviting."
-    },
-    note: "Set palette is not the brand palette. Charcoal, stone and champagne tones are set-design colors for photography only."
-  },
-  signage: {
-    elements: [
-      { name: "Illuminated header sign", desc: "UGLY DONUTS & CORN DOGS in white letters with a red ampersand, backlit on dark fascia. Primary exterior identifier." },
-      { name: "Donut portal arch", desc: "Large oversized donut circle at the entrance with doodle wall art inside and a gold ring outer edge. Signature moment." },
-      { name: "Doodle wall border", desc: "The dense illustrated doodle pattern runs as a horizontal border along the lower interior wall." },
-      { name: "Menu boards", desc: "Digital screens above the counter. Dark background, product photography. Campaign specials on A-frame floor signs." },
-      { name: "Ugly Bar counter", desc: "\"Ugly Bar\" script label on the counter face. Signals the drinks station specifically." },
-      { name: "Seasonal decor", desc: "Floral arches such as cherry blossom are seasonal only, not permanent brand elements." }
-    ],
-    consistency: "The illuminated sign format, donut portal and doodle wall art are the three non-negotiable in-store elements across all locations."
-  },
   logo_url: "",
-  guidelines: ""
+  books: []
 };
 
-// Umma's Recipe starter DNA (a premium Korean syrup and pantry brand). Edit freely and upload the real book.
 const DEFAULT_DNA_UMMA = {
   name: "Umma's Recipe",
-  philosophy: {
-    tagline: "Made the way Umma made it",
-    mission: "Bring the taste of a Korean mother's kitchen to everyday tables, made slowly and honestly.",
-    feeling: "\"Someone took care of me.\"",
-    why: "Every jar starts in a mother's kitchen. Umma's Recipe is the taste of being taken care of, made slowly, with real ingredients and nothing rushed.",
-    founder_words: "",
-    heritage: "",
-    cultural_gesture: "",
-    story_order: "Care first, then the ingredients, then the craft.",
-    positioning: "A premium Korean syrup and pantry brand. Small batch, honest ingredients, quiet craft over noise.",
-    positioning_rule: "Never positioned as a mass-market condiment or a diet product.",
-    pillars: [
-      { name: "Made slowly", desc: "Small batch, nothing rushed, nothing artificial." },
-      { name: "A mother's care", desc: "The feeling of being looked after, in a jar." },
-      { name: "Honest ingredients", desc: "Real fruit and real work, stated plainly." }
-    ]
-  },
-  colors: [
-    { name: "Honey Amber", hex: "#C98A3C", role: "Primary. Warm syrup, slow pour.", never: "Body copy on cream, too low contrast." },
-    { name: "Berry",       hex: "#8E3B4E", role: "Accent. Fruit, depth, richness.", never: "Large flat backgrounds." },
-    { name: "Ink Black",   hex: "#1A1512", role: "Text and wordmark.", never: "" },
-    { name: "Cream",       hex: "#FBF6EE", role: "Background. Calm and warm.", never: "Text at any size." },
-    { name: "Paper",       hex: "#FFFFFF", role: "Clean base for the product.", never: "" }
-  ],
-  color_rule: "",
-  typography: {
-    display: "Warm serif used with restraint",
-    body: "Clean humanist sans (Inter)",
-    note: "Soft, spacious, homemade premium. Restraint reads as quality.",
-    fonts: [],
-    script_note: ""
-  },
-  voice: {
-    tone: "Warm, homemade, quietly premium. Personal and unhurried, like a note from your mother.",
-    traits: [
-      { name: "Caring", desc: "Speaks the way a mother speaks, kind and unhurried." },
-      { name: "Honest", desc: "Plain words about real ingredients, no claims we cannot keep." },
-      { name: "Quiet", desc: "Calm and spacious. Never loud, never salesy." }
-    ],
-    sound_like: ["Warm","Homemade","Honest","Calm","Premium"],
-    never_sound_like: ["Clinical","Diet-focused","Hyped","Corporate"],
-    contexts: [],
-    dos: [
-      "Lead with care and memory before ingredients or claims",
-      "Let the jar and the pour carry the moment",
-      "Short, gentle, honest lines. Sentence case.",
-      "Feel handmade, never mass produced"
-    ],
-    donts: [
-      "No em dashes, ever.",
-      "No hype or discount-driven urgency",
-      "No cold or clinical health-food styling",
-      "No gradients or glassmorphism",
-      "Never recreate the wordmark as text or CSS"
-    ]
-  },
-  taglines: [
-    { line: "Made the way Umma made it", kind: "Primary tagline", use: "Default on packaging and all materials." }
-  ],
-  tagline_rule: "",
-  naming: [],
-  audience: { target: "", market_position: "", edge: "", not_for: "" },
-  logo: { marks: [], clear_space: "", never: [] },
-  illustration: { style: "", items: [] },
-  photography: { principles: [], brief: "", spec: {}, note: "" },
-  signage: { elements: [], consistency: "" },
   logo_url: "",
-  guidelines: ""
+  books: []
 };
 function defaultDNA(brand){ return brand === "umma" ? DEFAULT_DNA_UMMA : DEFAULT_DNA; }
 
@@ -663,116 +434,51 @@ function learningsBlock(learnings) {
 
 function buildBrandSystem(dna, learnings) {
   const L = [];
-  const add = (label, val) => { if (val && String(val).trim()) L.push(`${label}: ${val}`); };
   const p = dna.philosophy || {}, v = dna.voice || {}, t = dna.typography || {};
+  const lines = (arr) => arr.filter(x => x && String(x).trim());
 
-  L.push(`You are the Brand Director for ${dna.name || "this brand"}. Every idea you produce must sound and look like this brand, in its own voice. The brand's why always leads.`);
+  L.push(`You are the Brand Director for ${dna.name || "this brand"}. Everything you make must match this brand exactly as its own documents describe it.`);
   L.push("");
+
   const docs = docsText(dna);
   if (docs) {
     const names = ((dna.books) || []).filter(b => b && b.text).map(b => b.name).join(", ");
     L.push(`== OUR OFFICIAL DOCUMENTS (source of truth: ${names}) ==`);
     L.push("Work directly from these documents. Follow their exact color codes, typefaces, logo rules, official lines, product names, menu wording, imagery direction and tone.");
-    L.push("If anything below this section ever disagrees with them, the documents win. Never invent a rule or a product the documents do not state.");
+    L.push("If anything else ever disagrees with them, the documents win.");
     L.push("");
     L.push(docs);
-    L.push("");
-    L.push("== SUPPORTING NOTES (only where the documents are silent) ==");
-  }
-  L.push("== STORY AND POSITIONING ==");
-  add("TAGLINE", p.tagline); add("MISSION", p.mission); add("THE ONE FEELING WE SELL", p.feeling);
-  add("FOUNDER MEMORY / WHY", p.why); add("FOUNDER WORDS", p.founder_words);
-  add("HERITAGE", p.heritage); add("CULTURAL GESTURE", p.cultural_gesture);
-  add("STORY ORDER RULE", p.story_order); add("POSITIONING", p.positioning); add("POSITIONING RULE", p.positioning_rule);
-  if ((p.pillars || []).length) L.push("PILLARS: " + p.pillars.map(x => `${x.name} (${x.desc})`).join(" | "));
-
-  const au = dna.audience || {};
-  if (au.target || au.market_position || au.edge || au.not_for) {
-    L.push("");
-    L.push("== AUDIENCE AND MARKET ==");
-    add("TARGET CUSTOMER", au.target); add("MARKET POSITION", au.market_position);
-    add("COMPETITIVE EDGE", au.edge); add("WHO WE ARE NOT FOR", au.not_for);
   }
 
-  L.push("");
-  L.push("== COLOR SYSTEM (use these exact codes) ==");
-  (dna.colors || []).forEach(c => {
-    L.push(`- ${c.name} ${c.hex || ""}${c.pantone ? " / " + c.pantone : ""}: ${c.role || ""}${c.never ? ` NEVER: ${c.never}` : ""}`);
-  });
-  add("COLOR RULE", dna.color_rule);
-
-  L.push("");
-  L.push("== TYPOGRAPHY ==");
-  if ((t.fonts || []).length) t.fonts.forEach(f => L.push(`- ${f.name}: ${f.role}. Weights ${f.weights}. ${f.rule || ""}`));
-  else { add("DISPLAY", t.display); add("BODY", t.body); }
-  add("TYPE NOTE", t.note); add("SCRIPT NOTE", t.script_note);
-
-  L.push("");
-  L.push("== VOICE ==");
-  add("TONE", v.tone);
-  if ((v.traits || []).length) L.push("TRAITS: " + v.traits.map(x => `${x.name} (${x.desc})`).join(" | "));
-  if ((v.sound_like || []).length) L.push("WE SOUND LIKE: " + v.sound_like.join(", "));
-  if ((v.never_sound_like || []).length) L.push("WE NEVER SOUND LIKE: " + v.never_sound_like.join(", "));
-  if ((v.contexts || []).length) v.contexts.forEach(c => L.push(`- ${c.context}: ${c.tone}. Example: "${c.example}"`));
-  if ((v.dos || []).length) L.push("DO: " + v.dos.join(" | "));
-  if ((v.donts || []).length) L.push("DO NOT: " + v.donts.join(" | "));
-
-  if ((dna.taglines || []).length) {
+  // Optional notes, included only where they actually say something.
+  const extra = lines([
+    p.tagline && `TAGLINE: ${p.tagline}`,
+    p.why && `WHY: ${p.why}`,
+    p.positioning && `POSITIONING: ${p.positioning}`,
+    v.tone && `VOICE: ${v.tone}`,
+    (dna.colors || []).length && "PALETTE: " + (dna.colors || []).map(c => `${c.name} ${c.hex || ""}${c.role ? ` (${c.role})` : ""}`).join("; "),
+    (t.display || t.body) && `TYPOGRAPHY: ${[t.display, t.body].filter(Boolean).join(" / ")}`,
+    (v.dos || []).length && "DO: " + (v.dos || []).join(" | "),
+    (v.donts || []).length && "DO NOT: " + (v.donts || []).join(" | "),
+    dna.guidelines && String(dna.guidelines).slice(0, 8000)
+  ]);
+  if (extra.length) {
     L.push("");
-    L.push("== OFFICIAL LINES (use these exact lines, never improvise variations) ==");
-    dna.taglines.forEach(x => L.push(`- "${x.line}" (${x.kind}): ${x.use}`));
-    add("TAGLINE RULE", dna.tagline_rule);
-  }
-  if ((dna.naming || []).length) {
-    L.push("");
-    L.push("== NAMING CONVENTIONS ==");
-    dna.naming.forEach(n => L.push(`- ${n.pattern}: ${n.rule} Examples: ${n.examples}`));
-  }
-  const lg = dna.logo || {};
-  if ((lg.marks || []).length || lg.clear_space || (lg.never || []).length) {
-    L.push("");
-    L.push("== LOGO SYSTEM ==");
-    (lg.marks || []).forEach(m => L.push(`- ${m.name}: ${m.use}${m.file ? ` [files: ${m.file}]` : ""}`));
-    add("CLEAR SPACE", lg.clear_space);
-    if ((lg.never || []).length) L.push("LOGO NEVER: " + lg.never.join(" | "));
-  }
-  const il = dna.illustration || {};
-  if (il.style || (il.items || []).length) {
-    L.push("");
-    L.push("== ILLUSTRATION ==");
-    add("STYLE", il.style);
-    (il.items || []).forEach(i => L.push(`- ${i.name}: ${i.use}${i.never ? ` NEVER: ${i.never}` : ""}`));
-  }
-  const ph = dna.photography || {};
-  if ((ph.principles || []).length || ph.brief || (ph.spec && Object.keys(ph.spec).length)) {
-    L.push("");
-    L.push("== PHOTOGRAPHY AND IMAGE DIRECTION ==");
-    (ph.principles || []).forEach(x => L.push(`- ${x.name}: ${x.desc}`));
-    add("PHOTO BRIEF", ph.brief);
-    const sp = ph.spec || {};
-    add("PRODUCT", sp.product); add("LIGHTING", sp.lighting); add("SURFACES AND SET", sp.surfaces);
-    add("COMPOSITION", sp.composition); add("ON-IMAGE TYPE", sp.typography); add("OVERALL FEEL", sp.feel);
-    add("PHOTO NOTE", ph.note);
-  }
-  const sg = dna.signage || {};
-  if ((sg.elements || []).length || sg.consistency) {
-    L.push("");
-    L.push("== SIGNAGE AND IN-STORE ==");
-    (sg.elements || []).forEach(e => L.push(`- ${e.name}: ${e.desc}`));
-    add("CONSISTENCY", sg.consistency);
+    L.push(docs ? "== EXTRA NOTES (only where the documents are silent) ==" : "== BRAND NOTES ==");
+    extra.forEach(x => L.push(x));
   }
 
   L.push("");
-  L.push("Hard rules: never use em dashes. Never invent facts or new taglines. Restraint over hype. Warm, human, premium.");
-  if (dna.guidelines) L.push(`\n== FULL BRAND BOOK NOTES ==\n${String(dna.guidelines).slice(0, 12000)}`);
+  L.push("Hard rules: never use em dashes. Never invent facts, rules, product names or taglines. Everything you claim about the brand must come from the material above.");
+  if (!docs && !extra.length) L.push("Nothing has been uploaded for this brand yet. Say so plainly rather than guessing at its rules.");
   L.push(learningsBlock(learnings));
   return L.join("\n");
 }
 
-
-
+// Craft only. Every brand specific (palette, type, mood) comes from the uploaded documents
+// by way of the director, so nothing is invented here.
 const IMG_STYLE_SUFFIX =
-  " Style: premium restrained food-brand art direction for Ugly Donuts. Warm golden tan (#EABF70), brick red, cream and paper white palette. Natural soft light, appetizing, editorial, Krispy Kreme-level restraint. No gradients, no glassmorphism, no stocky AI gloss. Clean negative space.";
+  " Rendering: high quality commercial photography or design, natural light, real materials, clean negative space. No gradients, no glassmorphism, no stock-photo gloss, no invented logos or lettering beyond what is described.";
 
 const TASKS = [
   { id: "poster",       label: "Poster",         size: "1024x1536", hint: "Print or in-store promo poster" },
@@ -1081,138 +787,100 @@ function DocViewer({ doc, onClose }){
   );
 }
 
-function BrandDNA({ dna, setDna, saveDna, setLogo, absorbBook, addDoc, reAbsorbDoc, removeDoc, brand }) {
-  const [edit, setEdit] = useState(false);
-  const [draft, setDraft] = useState(dna);
-  const [busy, setBusy] = useState(false);
+function BrandDNA({ dna, saveDna, setLogo, absorbBook, addDoc, reAbsorbDoc, removeDoc, brand }) {
   const [logoBusy, setLogoBusy] = useState(false);
-  const [bookBusy, setBookBusy] = useState(false);
-  const [bookProgress, setBookProgress] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState("");
+  const [viewDoc, setViewDoc] = useState(null);
   const logoRef = useRef(null);
   const docRef = useRef(null);
-  const [viewDoc, setViewDoc] = useState(null);
-  useEffect(()=>{ setDraft(dna); }, [dna]);
-  async function save() { setBusy(true); await saveDna(draft); setBusy(false); setEdit(false); }
-  async function onLogo(e){ const f=e.target.files&&e.target.files[0]; if(!f)return; setLogoBusy(true); try{ await setLogo(f); }catch(err){ alert(err.message); } finally{ setLogoBusy(false); if(logoRef.current) logoRef.current.value=""; } }
 
+  const books = (dna.books || []);
+  const withText = books.filter(b => b && b.chars);
+  const totalChars = books.reduce((n,b)=>n+((b&&b.chars)||0), 0);
+
+  async function onLogo(e){
+    const f = e.target.files && e.target.files[0]; if(!f) return;
+    setLogoBusy(true);
+    try { await setLogo(f); } catch(err){ alert(err.message||String(err)); }
+    finally { setLogoBusy(false); if(logoRef.current) logoRef.current.value=""; }
+  }
   async function onDocs(e){
     const files = Array.from(e.target.files||[]); if(!files.length) return;
-    setBookBusy(true);
-    let done=0, failed=[];
-    for(const f of files){
+    setBusy(true);
+    let added=0; const failed=[];
+    for(let i=0;i<files.length;i++){
+      const f = files[i];
       try {
-        setBookProgress(`${f.name} (${done+1} of ${files.length}): reading...`);
-        const entry = await addDoc(f, (m)=>setBookProgress(`${f.name} (${done+1} of ${files.length}): ${m}`));
-        if(!entry.chars) failed.push(`${f.name} (no readable text found)`);
-        done++;
+        setProgress(`${f.name} (${i+1} of ${files.length}): reading...`);
+        const entry = await addDoc(f, (m)=>setProgress(`${f.name} (${i+1} of ${files.length}): ${m}`));
+        if(entry && entry.chars) added++; else failed.push(`${f.name} (no readable text)`);
       } catch(err){ failed.push(`${f.name} (${err.message||err})`); }
     }
-    setBookBusy(false); setBookProgress(""); if(docRef.current) docRef.current.value="";
-    alert(failed.length ? `Absorbed ${done - failed.length} of ${files.length}. Could not read: ${failed.join(", ")}`
-                        : `Absorbed ${done} document${done>1?"s":""}. The crew now works straight from them.`);
+    setBusy(false); setProgress(""); if(docRef.current) docRef.current.value="";
+    alert(failed.length ? `Added ${added} of ${files.length}. Could not read: ${failed.join(", ")}`
+                        : `Added ${added} document${added>1?"s":""}. The crew now works straight from ${added>1?"them":"it"}.`);
   }
   async function onReAbsorb(b){
-    setBookBusy(true);
-    try { const t = await reAbsorbDoc(b.id, (m)=>setBookProgress(`${b.name}: ${m}`)); alert(`Re-absorbed ${b.name} (${(t||"").length.toLocaleString()} characters).`); }
+    setBusy(true);
+    try { const t = await reAbsorbDoc(b.id, (m)=>setProgress(`${b.name}: ${m}`)); alert(`Re-read ${b.name}. ${(t||"").length.toLocaleString()} characters memorized.`); }
     catch(err){ alert(err.message||String(err)); }
-    finally { setBookBusy(false); setBookProgress(""); }
+    finally { setBusy(false); setProgress(""); }
   }
-  async function onRemoveDoc(b){
+  async function onForget(b){
     if(typeof confirm==="function" && !confirm(`Forget "${b.name}"? The crew will stop using it.`)) return;
-    setBookBusy(true);
+    setBusy(true);
     try { await removeDoc(b.id); } catch(err){ alert(err.message||String(err)); }
-    finally { setBookBusy(false); }
+    finally { setBusy(false); }
   }
 
-  const d = edit ? draft : dna;
-  const ADV = ["philosophy","audience","taglines","tagline_rule","naming","logo","illustration","photography","signage","color_rule","typography","voice","colors"];
-  const advOf = (o)=>{ const x={}; ADV.forEach(k=>{ if(o[k]!==undefined) x[k]=o[k]; }); return JSON.stringify(x,null,2); };
-  const [advText, setAdvText] = useState(()=>advOf(dna));
-  const [advErr, setAdvErr] = useState("");
-  useEffect(()=>{ if(edit) { setAdvText(advOf(draft)); setAdvErr(""); } }, [edit]);
-  // Union lists by name so nothing the founder wrote is lost, and nothing from the book stays missing.
-  function unionByName(mine, base){
-    const out = (mine||[]).slice();
-    (base||[]).forEach(b=>{
-      if(!b || !b.name) return;
-      if(!out.some(x=>x && x.name && String(x.name).toLowerCase()===String(b.name).toLowerCase())) out.push(b);
-    });
-    return out;
-  }
-  function restoreBookDefaults(){
-    const base = defaultDNA(brand);
-    let next = mergeDNA(base, draft);
-    ["colors","taglines","naming"].forEach(k=>{ next[k] = unionByName(draft[k], base[k]); });
-    next.logo = { ...next.logo, marks: unionByName((draft.logo||{}).marks, (base.logo||{}).marks) };
-    next.illustration = { ...next.illustration, items: unionByName((draft.illustration||{}).items, (base.illustration||{}).items) };
-    next.signage = { ...next.signage, elements: unionByName((draft.signage||{}).elements, (base.signage||{}).elements) };
-    next.voice = { ...next.voice, traits: unionByName((draft.voice||{}).traits, (base.voice||{}).traits) };
-    next.philosophy = { ...next.philosophy, pillars: unionByName((draft.philosophy||{}).pillars, (base.philosophy||{}).pillars) };
-    next.logo_url = draft.logo_url; next.brandbook = draft.brandbook;
-    setDraft(next); setAdvText(advOf(next)); setAdvErr("");
-  }
-  function onAdv(v){
-    setAdvText(v);
-    try { const j = JSON.parse(v); setAdvErr(""); setDraft({ ...draft, ...j }); }
-    catch(e){ setAdvErr("Not valid yet: " + e.message); }
-  }
-  const upd = (path, val) => {
-    const n = JSON.parse(JSON.stringify(draft));
-    let o = n; for (let i=0;i<path.length-1;i++) o = o[path[i]];
-    o[path[path.length-1]] = val; setDraft(n);
-  };
   return (
     <div className="wrap">
       <div className="row">
         <div>
           <div className="page-h serif">Brand DNA</div>
-          <div className="page-sub">Set this once. Every poster, caption and design in the studio is generated through it, so the crew always speaks in our voice.</div>
+          <div className="page-sub">Everything the studio knows about this brand comes from the files you upload here. Nothing is invented and nothing is rewritten.</div>
         </div>
-        <div className="spacer"></div>
-        {edit
-          ? <div className="row"><button className="btn btn-ghost btn-sm" onClick={restoreBookDefaults} title="Add back anything from the built in baseline that is missing here. Nothing you wrote is removed.">Fill from defaults</button>
-              <button className="btn btn-ghost btn-sm" onClick={()=>{setEdit(false);setDraft(dna);}}>Cancel</button>
-              <button className="btn btn-gold btn-sm" onClick={save} disabled={busy}>{busy?"Saving":"Save DNA"}</button></div>
-          : <button className="btn btn-ghost btn-sm" onClick={()=>setEdit(true)}>Edit</button>}
       </div>
 
       <div className="card">
-        <div className="card-h">Why we exist</div>
-        {edit ? <>
-          <label className="lbl">Tagline</label>
-          <input className="fld" value={d.philosophy.tagline} onChange={e=>upd(["philosophy","tagline"],e.target.value)} style={{marginBottom:12}} />
-          <label className="lbl">The why</label>
-          <textarea className="fld" rows={4} value={d.philosophy.why} onChange={e=>upd(["philosophy","why"],e.target.value)} style={{marginBottom:12}} />
-          <label className="lbl">Positioning</label>
-          <textarea className="fld" rows={3} value={d.philosophy.positioning} onChange={e=>upd(["philosophy","positioning"],e.target.value)} />
-        </> : <>
-          <div className="dir-head serif" style={{fontSize:26,marginBottom:10}}>{d.philosophy.tagline}</div>
-          {d.philosophy.feeling&&<p className="specline"><b>The one feeling we sell</b> {d.philosophy.feeling}</p>}
-          {d.philosophy.mission&&<p className="specline"><b>Mission</b> {d.philosophy.mission}</p>}
-          <p style={{fontSize:15,lineHeight:1.6,color:"var(--ink-soft)",maxWidth:680,marginTop:10}}>{d.philosophy.why}</p>
-          {d.philosophy.founder_words&&<p className="pullq serif">{d.philosophy.founder_words}</p>}
-          {d.philosophy.heritage&&<p className="specline"><b>Heritage</b> {d.philosophy.heritage}</p>}
-          {d.philosophy.cultural_gesture&&<p className="specline"><b>Cultural gesture</b> {d.philosophy.cultural_gesture}</p>}
-          <p className="mut" style={{marginTop:14,lineHeight:1.55,maxWidth:680}}>{d.philosophy.positioning}</p>
-          {d.philosophy.story_order&&<div className="ruleblock"><b>Story order</b> {d.philosophy.story_order}</div>}
-          {d.philosophy.positioning_rule&&<div className="ruleblock"><b>Positioning rule</b> {d.philosophy.positioning_rule}</div>}
-          {(d.philosophy.pillars||[]).length>0&&<div className="pillars">
-            {d.philosophy.pillars.map((p,i)=><div className="pillar" key={i}><div className="pillar-n">{p.name}</div><div className="pillar-d">{p.desc}</div></div>)}
-          </div>}
-        </>}
-      </div>
+        <div className="card-h">Your documents</div>
+        <p className="mut" style={{lineHeight:1.5,marginBottom:12}}>Brand book, menu book, signage spec, anything else. PDF or HTML, several at once. Each file is read word for word and used on every job. Tap a file to view it.</p>
 
-      {(d.audience&&(d.audience.target||d.audience.market_position||d.audience.edge||d.audience.not_for))?
-        <div className="card">
-          <div className="card-h">Audience and market</div>
-          <div className="specgrid">
-            {[["target","Target customer"],["market_position","Market position"],["edge","Competitive edge"],["not_for","Who we are not for"]]
-              .filter(([k])=>d.audience[k])
-              .map(([k,label])=>(
-                <div className="specrow" key={k}><div className="spec-a">{label}</div><div className="spec-b"><span>{d.audience[k]}</span></div></div>
+        {withText.length>0&&
+          <div className="absorbed">
+            <span className="ab-dot"></span>
+            <span>Memorized and in use. {withText.length} file{withText.length>1?"s":""}, {totalChars.toLocaleString()} characters read on every job.</span>
+          </div>}
+
+        {books.length>0&&
+          <div className="specgrid" style={{marginBottom:12}}>
+            {books.map(b=>(
+              <div className="docrow" key={b.id}>
+                <button className="doc-open" onClick={()=>b.url&&setViewDoc(b)} disabled={!b.url}>
+                  <span className="doc-i">{b.kind==="html"?"HTML":b.kind==="pdf"?"PDF":"IMG"}</span>
+                  <span className="doc-m">
+                    <span className="doc-n">{b.name}</span>
+                    <span className="doc-s">{b.chars?`${b.chars.toLocaleString()} characters memorized`:"No readable text found"}</span>
+                  </span>
+                </button>
+                <div className="doc-a">
+                  <button className="tile-link" onClick={()=>onReAbsorb(b)} disabled={busy}>Re-read</button>
+                  <button className="tile-link del" onClick={()=>onForget(b)} disabled={busy}>Forget</button>
+                </div>
+              </div>
             ))}
-          </div>
-        </div>:null}
+          </div>}
+
+        {books.length===0&&!busy&&
+          <div className="emptybox">No files yet. Upload your brand book to get started.</div>}
+
+        <button className="btn btn-gold btn-sm" onClick={()=>docRef.current&&docRef.current.click()} disabled={busy}>
+          {busy?<span className="spin"></span>:null}{busy?"Reading":"Upload files"}
+        </button>
+        <input ref={docRef} type="file" accept="application/pdf,.pdf,text/html,.html,.htm,image/*,.txt,.md" multiple className="hidden" onChange={onDocs} />
+        {busy&&progress&&<div className="mut" style={{marginTop:9,fontSize:12}}><span className="spin"></span>{progress}</div>}
+      </div>
 
       <div className="card">
         <div className="card-h">Logo</div>
@@ -1221,206 +889,14 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, absorbBook, addDoc, reAbsorbD
             {!dna.logo_url&&<span className="mut" style={{fontSize:11}}>No logo</span>}
           </div>
           <div style={{flex:1}}>
-            <p className="mut" style={{lineHeight:1.5,marginBottom:10}}>Upload this brand's real wordmark. It shows in the app and anchors the identity. PNG with transparency works best.</p>
+            <p className="mut" style={{lineHeight:1.5,marginBottom:10}}>Your wordmark, used as this brand's mark inside the app. PNG with transparency works best.</p>
             <button className="btn btn-ghost btn-sm" onClick={()=>logoRef.current&&logoRef.current.click()} disabled={logoBusy}>{logoBusy?<span className="spin"></span>:null}{logoBusy?"Uploading":(dna.logo_url?"Replace logo":"Upload logo")}</button>
             <input ref={logoRef} type="file" accept="image/*" className="hidden" onChange={onLogo} />
           </div>
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-h">Brand documents</div>
-        <p className="mut" style={{lineHeight:1.5,marginBottom:12}}>Upload the brand book, the menu book, or anything else the studio should know by heart. PDF or HTML. Each one is absorbed word for word and read on every job, so you never have to retype it here.</p>
-
-        {(dna.books||[]).filter(b=>b&&b.text).length>0&&
-          <div className="absorbed">
-            <span className="ab-dot"></span>
-            <span>Memorized and in use. {(dna.books||[]).filter(b=>b&&b.text).length} document{(dna.books||[]).filter(b=>b&&b.text).length>1?"s":""}, {(dna.books||[]).reduce((n,b)=>n+((b&&b.chars)||0),0).toLocaleString()} characters read on every job.</span>
-          </div>}
-
-        {(dna.books||[]).length>0&&
-          <div className="specgrid" style={{marginBottom:12}}>
-            {(dna.books||[]).map(b=>(
-              <div className="docrow" key={b.id}>
-                <div className="doc-i">{(b.kind==="html")?"HTML":(b.kind==="pdf")?"PDF":"IMG"}</div>
-                <div className="doc-m">
-                  <div className="doc-n">{b.name}</div>
-                  <div className="doc-s">{b.chars?`${b.chars.toLocaleString()} characters absorbed`:"No readable text found"}</div>
-                </div>
-                <div className="doc-a">
-                  {b.url&&<button className="tile-link" onClick={()=>setViewDoc(b)}>View</button>}
-                  <button className="tile-link" onClick={()=>onReAbsorb(b)} disabled={bookBusy}>Re-absorb</button>
-                  <button className="tile-link del" onClick={()=>onRemoveDoc(b)} disabled={bookBusy}>Forget</button>
-                </div>
-              </div>
-            ))}
-          </div>}
-
-        <button className="btn btn-gold btn-sm" onClick={()=>docRef.current&&docRef.current.click()} disabled={bookBusy}>
-          {bookBusy?<span className="spin"></span>:null}{bookBusy?"Reading":"Upload documents"}
-        </button>
-        <input ref={docRef} type="file" accept="application/pdf,.pdf,text/html,.html,.htm,image/*" multiple className="hidden" onChange={onDocs} />
-        {bookBusy&&bookProgress&&<div className="mut" style={{marginTop:9,fontSize:12}}><span className="spin"></span>{bookProgress}</div>}
-        {!bookBusy&&<div className="mut" style={{marginTop:8,fontSize:11}}>These documents are the source of truth. Where they say something, they win over the summary cards below.</div>}
-      </div>
-
-      <div className="card">
-        <div className="card-h">Palette</div>
-        <div className="pal">
-          {d.colors.map((c,i)=>(
-            <div className="sw" key={i}>
-              <div className="sw-chip" style={{background:c.hex}}></div>
-              <div className="sw-body">
-                {edit
-                  ? <><input className="fld btn-sm" value={c.name} onChange={e=>{const n=[...draft.colors];n[i]={...n[i],name:e.target.value};setDraft({...draft,colors:n});}} style={{marginBottom:6,padding:"6px 8px"}}/>
-                      <input className="fld btn-sm" value={c.hex} onChange={e=>{const n=[...draft.colors];n[i]={...n[i],hex:e.target.value};setDraft({...draft,colors:n});}} style={{padding:"6px 8px"}}/></>
-                  : <><div className="sw-name">{c.name}</div><div className="sw-hex">{c.hex}{c.pantone?` · ${c.pantone}`:""}</div><div className="sw-role">{c.role}</div>{c.never?<div className="sw-never">Never: {c.never}</div>:null}</>}
-              </div>
-            </div>
-          ))}
-        </div>
-        {d.color_rule&&<div className="ruleblock" style={{marginTop:14}}>{d.color_rule}</div>}
-      </div>
-
-      <div className="two">
-        <div className="card">
-          <div className="card-h">Voice</div>
-          {edit
-            ? <textarea className="fld" rows={3} value={d.voice.tone} onChange={e=>upd(["voice","tone"],e.target.value)} />
-            : <p style={{fontSize:14,lineHeight:1.6,color:"var(--ink-soft)"}}>{d.voice.tone}</p>}
-          {!edit&&(d.voice.traits||[]).length>0&&<div className="traits">
-            {d.voice.traits.map((t,i)=><div className="trait" key={i}><b>{t.name}</b><span>{t.desc}</span></div>)}
-          </div>}
-          {!edit&&(d.voice.sound_like||[]).length>0&&<div style={{marginTop:12}}>
-            <div className="mini-h">We sound like</div>
-            <div className="tagrow">{d.voice.sound_like.map((x,i)=><span className="ttag" key={i}>{x}</span>)}</div>
-          </div>}
-          {!edit&&(d.voice.never_sound_like||[]).length>0&&<div style={{marginTop:10}}>
-            <div className="mini-h">We never sound like</div>
-            <div className="tagrow">{d.voice.never_sound_like.map((x,i)=><span className="ttag off" key={i}>{x}</span>)}</div>
-          </div>}
-          <div style={{height:18}}></div>
-          <div className="card-h">Typography</div>
-          {(d.typography.fonts||[]).length>0
-            ? d.typography.fonts.map((f,i)=><p className="mut" style={{lineHeight:1.5,marginTop:i?8:0}} key={i}><b style={{color:"var(--ink)"}}>{f.name}</b> · {f.role}{f.weights?` · ${f.weights}`:""}{f.rule?<><br/><span style={{fontStyle:"italic"}}>{f.rule}</span></>:null}</p>)
-            : <><p className="mut" style={{lineHeight:1.55}}><b style={{color:"var(--ink)"}}>Display</b> · {d.typography.display}</p>
-                <p className="mut" style={{lineHeight:1.55,marginTop:4}}><b style={{color:"var(--ink)"}}>Body</b> · {d.typography.body}</p></>}
-          <p className="mut" style={{lineHeight:1.55,marginTop:6,fontStyle:"italic"}}>{d.typography.note}</p>
-          {d.typography.script_note&&<p className="mut" style={{lineHeight:1.5,marginTop:6}}>{d.typography.script_note}</p>}
-        </div>
-        <div className="card">
-          <div className="card-h">Do and don't</div>
-          <ul className="dolist do" style={{marginBottom:14}}>
-            {d.voice.dos.map((x,i)=><li key={i}><span className="mk">✓</span><span>{x}</span></li>)}
-          </ul>
-          <ul className="dolist dont">
-            {d.voice.donts.map((x,i)=><li key={i}><span className="mk">✕</span><span>{x}</span></li>)}
-          </ul>
-        </div>
-      </div>
-
-      {(d.taglines||[]).length>0&&
-        <div className="card">
-          <div className="card-h">Official lines</div>
-          <div className="specgrid">
-            {d.taglines.map((t,i)=>(
-              <div className="specrow" key={i}>
-                <div className="spec-a serif">{t.line}</div>
-                <div className="spec-b"><b>{t.kind}</b><span>{t.use}</span></div>
-              </div>
-            ))}
-          </div>
-          {d.tagline_rule&&<div className="ruleblock" style={{marginTop:12}}>{d.tagline_rule}</div>}
-        </div>}
-
-      {(d.naming||[]).length>0&&
-        <div className="card">
-          <div className="card-h">Naming conventions</div>
-          <div className="specgrid">
-            {d.naming.map((n,i)=>(
-              <div className="specrow" key={i}>
-                <div className="spec-a">{n.pattern}</div>
-                <div className="spec-b"><span>{n.rule}</span><span className="mut" style={{marginTop:3}}>{n.examples}</span></div>
-              </div>
-            ))}
-          </div>
-        </div>}
-
-      {((d.logo&&(d.logo.marks||[]).length)||(d.logo&&d.logo.clear_space))?
-        <div className="card">
-          <div className="card-h">Logo system</div>
-          <div className="specgrid">
-            {(d.logo.marks||[]).map((m,i)=>(
-              <div className="specrow" key={i}><div className="spec-a">{m.name}</div><div className="spec-b"><span>{m.use}</span>{m.file?<span className="mut" style={{marginTop:3}}>Files: {m.file}</span>:null}</div></div>
-            ))}
-          </div>
-          {d.logo.clear_space&&<div className="ruleblock" style={{marginTop:12}}><b>Clear space</b> {d.logo.clear_space}</div>}
-          {(d.logo.never||[]).length>0&&<ul className="dolist dont" style={{marginTop:12}}>
-            {d.logo.never.map((x,i)=><li key={i}><span className="mk">✕</span><span>{x}</span></li>)}
-          </ul>}
-        </div>:null}
-
-      {((d.illustration&&(d.illustration.items||[]).length)||(d.illustration&&d.illustration.style))?
-        <div className="card">
-          <div className="card-h">Illustration system</div>
-          {d.illustration.style&&<div className="ruleblock" style={{marginBottom:12}}>{d.illustration.style}</div>}
-          <div className="specgrid">
-            {(d.illustration.items||[]).map((it,i)=>(
-              <div className="specrow" key={i}>
-                <div className="spec-a">{it.name}</div>
-                <div className="spec-b"><span>{it.use}</span>{it.never?<span className="never-t">Never on: {it.never}</span>:null}</div>
-              </div>
-            ))}
-          </div>
-        </div>:null}
-
-      {((d.photography&&(d.photography.principles||[]).length)||(d.photography&&d.photography.brief))?
-        <div className="card">
-          <div className="card-h">Photography and image direction</div>
-          {(d.photography.principles||[]).length>0&&<div className="traits" style={{marginBottom:12}}>
-            {d.photography.principles.map((p,i)=><div className="trait" key={i}><b>{p.name}</b><span>{p.desc}</span></div>)}
-          </div>}
-          {d.photography.brief&&<div className="ruleblock" style={{marginBottom:12}}><b>Photo brief</b> {d.photography.brief}</div>}
-          {d.photography.spec&&Object.keys(d.photography.spec).length>0&&<div className="specgrid">
-            {[["product","Product"],["lighting","Lighting"],["surfaces","Surfaces and set"],["composition","Composition"],["typography","On-image type"],["feel","Overall feel"]]
-              .filter(([k])=>d.photography.spec[k])
-              .map(([k,label])=>(
-                <div className="specrow" key={k}><div className="spec-a">{label}</div><div className="spec-b"><span>{d.photography.spec[k]}</span></div></div>
-            ))}
-          </div>}
-          {d.photography.note&&<div className="ruleblock" style={{marginTop:12}}>{d.photography.note}</div>}
-        </div>:null}
-
-      {((d.signage&&(d.signage.elements||[]).length)||(d.signage&&d.signage.consistency))?
-        <div className="card">
-          <div className="card-h">Signage and in-store</div>
-          <div className="specgrid">
-            {(d.signage.elements||[]).map((e,i)=>(
-              <div className="specrow" key={i}><div className="spec-a">{e.name}</div><div className="spec-b"><span>{e.desc}</span></div></div>
-            ))}
-          </div>
-          {d.signage.consistency&&<div className="ruleblock" style={{marginTop:12}}>{d.signage.consistency}</div>}
-        </div>:null}
-
-      {edit&&
-        <div className="card">
-          <div className="card-h">All brand book sections (advanced)</div>
-          <p className="mut" style={{marginBottom:8,lineHeight:1.5}}>Everything the crew reads: story layers, official lines, naming, logo system, illustration, photography and signage. Edit as structured data. Invalid text is not saved until it parses.</p>
-          <textarea className={"fld"+(advErr?" fld-err":"")} rows={16} value={advText} onChange={e=>onAdv(e.target.value)} spellCheck={false} style={{fontFamily:"ui-monospace,Menlo,monospace",fontSize:12,lineHeight:1.5}} />
-          {advErr?<div className="mut" style={{color:"var(--brick)",marginTop:6,fontSize:12}}>{advErr}</div>
-                 :<div className="mut" style={{marginTop:6,fontSize:12}}>Valid. Changes are in the draft, press Save DNA to keep them.</div>}
-        </div>}
-
       {viewDoc&&<DocViewer doc={viewDoc} onClose={()=>setViewDoc(null)} />}
-
-      {(edit || (d.guidelines && d.guidelines.length)) &&
-        <div className="card">
-          <div className="card-h">Full brand book guidelines</div>
-          {edit
-            ? <><p className="mut" style={{marginBottom:8,lineHeight:1.5}}>Everything absorbed from the brand book. The crew reads this on every job. Edit freely.</p>
-                <textarea className="fld" rows={14} value={d.guidelines||""} onChange={e=>upd(["guidelines"],e.target.value)} style={{fontFamily:"inherit",lineHeight:1.55}} /></>
-            : <div className="mut" style={{whiteSpace:"pre-wrap",lineHeight:1.6,fontSize:13,color:"var(--ink-soft)"}}>{d.guidelines}</div>}
-        </div>}
     </div>
   );
 }
@@ -1867,7 +1343,7 @@ function App() {
   const [items, setItems] = useState([]);
   const [creations, setCreations] = useState([]);
   const [learnings, setLearnings] = useState([]);
-  const [railOpen, setRailOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [installEvt, setInstallEvt] = useState(null);
   const [notifState, setNotifState] = useState(typeof Notification!=="undefined"?Notification.permission:"unsupported");
@@ -1904,27 +1380,12 @@ function App() {
     if(slug===brand) return;
     try { localStorage.setItem("ugly_studio_brand", slug); } catch {}
     setDna(defaultDNA(slug)); setItems([]); setCreations([]); setLearnings([]);
-    setBrand(slug); setNav("dna"); setRailOpen(false);
+    setBrand(slug); setNav("dna"); setMoreOpen(false);
   }
 
   function seedLocal(b){
-    const isUmma = b==="umma";
-    setDna(defaultDNA(b));
-    setItems(isUmma ? [
-      { id:"u1", title:"Umma logo", kind:"logo", tags:["logo"], file_url:"/icons/umma.png", thumb_url:"/icons/umma.png", ai_analysis:"" }
-    ] : [
-      { id:"s1", title:"Store wordmark", kind:"logo", tags:["logo","gold"], file_url:"/icons/wordmark.png", thumb_url:"/icons/wordmark.png",
-        ai_analysis:"Circular gold badge on white. Restrained, premium, hand-crafted feel. Golden tan #EABF70 on paper. This is the anchor of the identity." },
-      { id:"s2", title:"Primary logo", kind:"logo", tags:["logo"], file_url:"/icons/logo.png", thumb_url:"/icons/logo.png", ai_analysis:"" }
-    ]);
-    setCreations([]);
-    setLearnings(isUmma ? [
-      { id:"m1", kind:"emphasis", text:"Lead with the feeling of a mother's kitchen before ingredients.", weight:2, active:true, examples:[] }
-    ] : [
-      { id:"k1", kind:"dislike",  text:"No dark navy backgrounds on product posters. Anchor in cream and paper.", weight:3, active:true, examples:["poster: background too dark"] },
-      { id:"k2", kind:"emphasis", text:"Always lead with the warm memory feeling before the product or the offer.", weight:4, active:true, examples:[] },
-      { id:"k3", kind:"mistake",  text:"Stop slipping em dashes into headlines. Use commas or periods.", weight:2, active:true, examples:["copy: used an em dash"] }
-    ]);
+    // Preview mode only. Start empty so nothing looks like brand knowledge we do not have.
+    setDna(defaultDNA(b)); setItems([]); setCreations([]); setLearnings([]);
   }
 
   async function loadAll(b){
@@ -2302,21 +1763,14 @@ function App() {
 
   return (
     <div className="shell">
-      {railOpen && <div className="rail-scrim" onClick={()=>setRailOpen(false)}></div>}
-      <div className={"rail"+(railOpen?" open":"")}>
+      <div className="rail">
         <div className="rail-top">
           <img src={dna.logo_url || brandOf(brand).logo} alt={brandOf(brand).name} onError={(e)=>{e.target.src="/icons/logo.png";}} />
           <div><div className="rt-name serif">{brandOf(brand).short} Studio</div><div className="rt-sub">Brand</div></div>
-          <button className="rail-x" onClick={()=>setRailOpen(false)} aria-label="Close menu">✕</button>
-        </div>
-        <div className="brandsw">
-          {BRANDS.map(b=>(
-            <button key={b.slug} className={"bsw"+(brand===b.slug?" on":"")} onClick={()=>switchBrand(b.slug)}>{b.short}</button>
-          ))}
         </div>
         <div className="nav">
           {NAV.map(n=>(
-            <button key={n.id} className={"nav-item"+(nav===n.id?" on":"")} onClick={()=>{setNav(n.id);setRailOpen(false);}}>
+            <button key={n.id} className={"nav-item"+(nav===n.id?" on":"")} onClick={()=>setNav(n.id)}>
               <span className="ic">{n.ic}</span>{n.label}
             </button>
           ))}
@@ -2340,15 +1794,49 @@ function App() {
             <button className="btn btn-ghost btn-sm" onClick={()=>setNotifDismissed(true)}>Later</button>
           </div>}
         <div className="ctxbar">
-          <button className="btn btn-ghost btn-sm burger" onClick={()=>setRailOpen(o=>!o)}>☰</button>
-          <span className="ctx-tag">{dna.philosophy&&dna.philosophy.tagline}</span>
-          <div className="ctx-dots">{dots.map((c,i)=><span key={i} style={{background:c.hex}} title={c.name}></span>)}</div>
+          <img className="ctx-mark only-mobile" src={dna.logo_url || brandOf(brand).logo} alt="" onError={(e)=>{e.target.src="/icons/logo.png";}} />
+          <span className="ctx-tag">{(dna.philosophy&&dna.philosophy.tagline) || brandOf(brand).name}</span>
+          <div className="spacer"></div>
+          <div className="brandtoggle" role="group" aria-label="Switch brand">
+            {BRANDS.map(b=>(
+              <button key={b.slug} className={"bt-opt"+(brand===b.slug?" on":"")} onClick={()=>switchBrand(b.slug)}>{b.short}</button>
+            ))}
+          </div>
         </div>
-        {nav==="dna"     && <BrandDNA dna={dna} setDna={setDna} saveDna={saveDna} setLogo={setLogo} absorbBook={absorbBook} addDoc={addDoc} reAbsorbDoc={reAbsorbDoc} removeDoc={removeDoc} brand={brand} />}
+        {nav==="dna"     && <BrandDNA dna={dna} saveDna={saveDna} setLogo={setLogo} absorbBook={absorbBook} addDoc={addDoc} reAbsorbDoc={reAbsorbDoc} removeDoc={removeDoc} brand={brand} />}
         {nav==="library" && <Library items={items} addItems={addItems} analyze={analyze} setItemKind={setItemKind} deleteItem={deleteItem} dna={dna} />}
         {nav==="studio"  && <Studio dna={dna} learnings={learnings} learn={learn} saveCreation={saveCreation} addToLibrary={addToLibrary} creations={creations} />}
         {nav==="learnings" && <Learnings learnings={learnings} addLearning={addLearning} toggleLearning={toggleLearning} removeLearning={removeLearning} />}
       </div>
+
+      <nav className="tabbar">
+        {NAV.map(n=>(
+          <button key={n.id} className={"tab"+(nav===n.id?" on":"")} onClick={()=>setNav(n.id)}>
+            <span className="tab-ic">{n.ic}</span><span className="tab-l">{n.label}</span>
+          </button>
+        ))}
+        <button className={"tab"+(moreOpen?" on":"")} onClick={()=>setMoreOpen(true)}>
+          <span className="tab-ic">⋯</span><span className="tab-l">More</span>
+        </button>
+      </nav>
+
+      {moreOpen&&
+        <div className="sheet-bg" onClick={()=>setMoreOpen(false)}>
+          <div className="sheet" onClick={e=>e.stopPropagation()}>
+            <div className="sheet-h">
+              <div className="sheet-t serif">{brandOf(brand).name}</div>
+              <button className="btn btn-ghost btn-sm" onClick={()=>setMoreOpen(false)}>Close</button>
+            </div>
+            <div style={{padding:"14px 16px calc(18px + env(safe-area-inset-bottom))"}}>
+              <span className={"mode-chip "+(LOCAL?"mode-local":"mode-live")}>{LOCAL?"Preview mode":"Live"}</span>
+              <div className="who" style={{marginTop:8,marginBottom:12}}>{LOCAL?"Not connected to Supabase yet":(session&&session.user&&session.user.email)}</div>
+              {installEvt&&<button className="btn btn-gold btn-sm" style={{width:"100%",marginBottom:8}} onClick={doInstall}>Install app</button>}
+              {!LOCAL&&notifState!=="granted"&&notifState!=="unsupported"&&<button className="btn btn-ghost btn-sm" style={{width:"100%",marginBottom:8}} onClick={enableNotifs} disabled={notifBusy}>{notifBusy?"Turning on":"Turn on notifications"}</button>}
+              {!LOCAL&&notifState==="granted"&&<button className="btn btn-ghost btn-sm" style={{width:"100%",marginBottom:8}} onClick={sendTestPush}>Send test notification</button>}
+              {!LOCAL&&<button className="btn btn-ghost btn-sm" style={{width:"100%"}} onClick={()=>sb.auth.signOut()}>Sign out</button>}
+            </div>
+          </div>
+        </div>}
 
       <button className="fab no-select" onClick={()=>setChatOpen(true)} title="Ask the studio">✦</button>
       <ChatSheet open={chatOpen} onClose={()=>setChatOpen(false)} dna={dna} learnings={learnings} />
