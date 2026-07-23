@@ -72,6 +72,47 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .rail-top img{width:38px;height:38px;object-fit:contain;}
 .rail-top .rt-name{font-size:16px;font-weight:600;line-height:1;}
 .rail-top .rt-sub{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-deep);font-weight:700;margin-top:3px;}
+.sizes{display:flex;gap:9px;flex-wrap:wrap;}
+.sizebtn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 14px;border-radius:11px;
+  border:1px solid var(--line2);background:#fff;font-family:inherit;transition:all .12s;min-width:104px;}
+.sizebtn:hover{border-color:var(--gold-deep);}
+.sizebtn.on{border-color:var(--ink);background:var(--cream);}
+.sz-icon{display:block;border:2px solid var(--muted2);border-radius:3px;}
+.sizebtn.on .sz-icon{border-color:var(--ink);}
+.sz-1-1{width:24px;height:24px;}
+.sz-2-3{width:18px;height:26px;}
+.sz-3-2{width:28px;height:19px;}
+.sz-l{font-size:12px;font-weight:600;color:var(--ink);}
+.sz-r{font-size:10.5px;color:var(--muted);}
+.specline{font-size:13.5px;line-height:1.6;color:var(--ink-soft);margin-top:6px;max-width:680px;}
+.specline b{color:var(--ink);font-weight:600;margin-right:6px;}
+.pullq{font-size:16px;line-height:1.6;color:var(--ink);margin:14px 0;padding-left:14px;border-left:3px solid var(--gold);font-style:italic;max-width:660px;}
+.ruleblock{background:var(--cream);border:1px solid var(--line);border-radius:9px;padding:11px 13px;margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--ink-soft);}
+.ruleblock b{color:var(--ink);margin-right:5px;}
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:16px;}
+.pillar{background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:12px 13px;}
+.pillar-n{font-weight:600;font-size:13px;margin-bottom:4px;}
+.pillar-d{font-size:12px;line-height:1.5;color:var(--muted);}
+.sw-never{font-size:11px;color:var(--brick);margin-top:3px;line-height:1.4;}
+.traits{display:grid;gap:8px;margin-top:12px;}
+.trait{font-size:12.5px;line-height:1.5;color:var(--muted);}
+.trait b{color:var(--ink);margin-right:6px;}
+.mini-h{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);font-weight:700;margin-bottom:6px;}
+.tagrow{display:flex;flex-wrap:wrap;gap:5px;}
+.ttag.off{background:#fdf0ee;color:var(--brick);}
+.specgrid{display:flex;flex-direction:column;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+.specrow{display:grid;grid-template-columns:210px 1fr;gap:14px;background:var(--paper);padding:11px 14px;}
+.spec-a{font-weight:600;font-size:13px;line-height:1.4;}
+.spec-b{display:flex;flex-direction:column;font-size:12.5px;line-height:1.55;color:var(--muted);}
+.spec-b b{color:var(--gold-deep);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;}
+.never-t{color:var(--brick);margin-top:3px;}
+.fld-err{border-color:var(--brick);}
+@media(max-width:760px){.specrow{grid-template-columns:1fr;gap:4px;}}
+.rail-x{display:none;margin-left:auto;background:none;border:none;font-size:20px;line-height:1;color:var(--muted);padding:6px 4px;align-self:flex-start;}
+.rail-x:hover{color:var(--ink);}
+.rail-scrim{position:fixed;inset:0;background:rgba(33,28,22,.42);z-index:35;}
+@media(max-width:820px){.rail-x{display:inline-flex;}}
+@media(min-width:821px){.rail-scrim{display:none;}}
 .brandsw{display:flex;gap:5px;padding:12px 14px 4px;}
 .bsw{flex:1;padding:8px 6px;border-radius:9px;border:1px solid var(--line2);background:#fff;font-family:inherit;font-size:12px;font-weight:600;color:var(--muted);transition:all .12s;}
 .bsw:hover{border-color:var(--gold-deep);}
@@ -124,9 +165,11 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .chips{display:flex;gap:6px;flex-wrap:wrap;}
 .chip{padding:6px 12px;border-radius:20px;border:1px solid var(--line2);background:#fff;font-size:12px;font-weight:500;color:var(--muted);}
 .chip.on{background:var(--ink);color:var(--gold);border-color:var(--ink);font-weight:600;}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px;align-items:start;}
 .tile{background:#fff;border:1px solid var(--line);border-radius:13px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;}
-.tile-img{aspect-ratio:4/5;background:var(--cream) center/cover no-repeat;position:relative;}
+.tile-img{background:var(--cream);position:relative;line-height:0;min-height:64px;}
+.tile-img img{width:100%;height:auto;display:block;}
+.tile-img.doc{aspect-ratio:4/5;}
 .tile-kind{position:absolute;top:9px;left:9px;background:rgba(26,21,18,.82);color:#fff;font-size:10px;font-weight:600;
   letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:6px;}
 .tile-doc{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;
@@ -297,58 +340,199 @@ const DEFAULT_DNA = {
   name: "Ugly Donuts & Corn Dogs",
   philosophy: {
     tagline: "A bite to remember",
-    why: "My mother handed me a Korean corn dog when I was a child. It was warm, and I never forgot it. We are not selling food. We are giving people a memory they carry for the rest of their lives.",
-    positioning: "The only premium-positioned Korean corn dog brand in the U.S. Made to order, cooked in avocado oil, built slowly on quality while others chased short-term franchise money."
+    mission: "We exist to make Korean corn dogs and donuts a staple American meal, not street food, not a trend.",
+    feeling: "\"I found something special.\" A bite to remember.",
+    why: "This brand began with a memory from thirty years ago. A little boy walked beside his mother to a corn dog stand. It was warm in his hands, and he never forgot it. We are not selling food. We are giving people a memory they carry for the rest of their lives.",
+    founder_words: "Food is something people share with who they love. That is what we want to be part of, one order at a time.",
+    heritage: "The Korean corn dog exists because of an American kindness. During the Korean War, American troops shared corn dogs with Korean civilians who had very little. Korea took that gesture and made it its own. Two cultures, one food.",
+    cultural_gesture: "In South Korea, giving something with both hands is a gesture of respect and gratitude. Every handover is a cultural gesture of respect.",
+    story_order: "The brand story is always told memory first. Layer 1: the founder's childhood memory (personal, emotional). Layer 2: the heritage story (cultural, historical). Never lead with the history.",
+    positioning: "A category of one. Not fast food, not street food. A handcrafted meal experience that stands on its own, premium without coldness.",
+    positioning_rule: "Ugly Donuts is never framed as street food and never compared to fast food. We are not another quick service brand.",
+    pillars: [
+      { name: "A Category of One", desc: "Not fast food. Not street food. A handcrafted meal experience that stands on its own, premium without coldness." },
+      { name: "Premium Warmth", desc: "High quality without coldness. Premium, but feels like it was made for you." },
+      { name: "Memory-Driven", desc: "Every touchpoint should feel like a core memory in the making." },
+      { name: "Korean-American Story", desc: "Two cultures, one food. Every handover is a cultural gesture of respect." }
+    ]
   },
   colors: [
-    { name: "Golden Tan", hex: "#EABF70", role: "Primary. Straight from the logo. Warmth and craft." },
-    { name: "Brick Red",  hex: "#B23A2E", role: "Accent. Appetite, heat, the fried edge." },
-    { name: "Ink Black",  hex: "#1A1512", role: "Wordmark and text. Confidence, not coldness." },
-    { name: "Cream",      hex: "#FBF7EF", role: "Background. Space to breathe." },
-    { name: "Paper",      hex: "#FFFFFF", role: "Clean base that lets the product be the hero." }
+    { name: "Golden Tan",  hex: "#EABF70", role: "Primary point color, straight from the logo. Warmth and craft. Italic headlines, editorial accents.", never: "Body copy, insufficient contrast on white." },
+    { name: "Brand Orange", hex: "#e1661a", role: "Logo ampersand, CTAs, accent labels, campaign highlights.", never: "Large background blocks, too aggressive." },
+    { name: "Brick Red",   hex: "#B23A2E", role: "Accent. Appetite, heat, the fried edge.", never: "Backgrounds or large fields." },
+    { name: "Ink Black",   hex: "#1A1512", role: "Wordmark, text, and digital dark backgrounds. Confidence, not coldness.", never: "Packaging dark fields, use Deep Navy instead." },
+    { name: "Deep Navy",   hex: "#141b4d", pantone: "PMS 2766C", role: "Packaging, print, physical materials.", never: "Digital backgrounds, use Ink Black instead." },
+    { name: "Cream",       hex: "#FBF7EF", role: "Background. Space to breathe.", never: "Text at any size." },
+    { name: "Paper",       hex: "#FFFFFF", role: "Clean base that lets the product be the hero.", never: "" },
+    { name: "Warm Grey",   hex: "#a8a7a1", role: "Body text on dark backgrounds.", never: "Body text on light, too low contrast." }
   ],
+  color_rule: "The two darks rule: Ink Black (#1A1512) is the everyday dark for wordmark, text and digital backgrounds. Deep Navy (PMS 2766C) is the packaging and print dark. Do not swap them.",
+  typography: {
+    display: "Cinzel, Regular and Italic. All headlines, subheads, pull quotes, taglines.",
+    body: "Quicksand, 400 and 500. All body copy, menus, descriptions, captions, packaging text.",
+    note: "Italic Cinzel in Golden Tan (#EABF70) signals emotional emphasis. Three typefaces, each has one job, never mix roles.",
+    fonts: [
+      { name: "Neue Einstellung", role: "Wordmark only", weights: "Thin, wide tracking", rule: "Never use for any copy. Logo files only." },
+      { name: "Cinzel", role: "All headlines, subheads, pull quotes, taglines", weights: "Regular, Italic", rule: "Italic plus Gold (#EABF70) equals emotional emphasis." },
+      { name: "Quicksand", role: "All body copy, menus, descriptions, captions", weights: "400, 500", rule: "Primary readability font across all contexts." }
+    ],
+    script_note: "The handwritten \"ugly\" script is an illustrative logo element, not a typeface. It exists only as a logo file."
+  },
   voice: {
-    tone: "Krispy Kreme-level restrained premium. Warm, human, peer to peer. The why comes first, numbers come after.",
+    tone: "Confident, warm, punchy, story led. Premium casual with a heartbeat. We say it once, clearly, and never apologize for being premium.",
+    traits: [
+      { name: "Confident", desc: "We do not explain ourselves. We do not apologize for being premium. We say it once, clearly." },
+      { name: "Warm", desc: "Never cold or corporate. The brand has a heartbeat. Copy should feel personal, not polished." },
+      { name: "Punchy", desc: "Short sentences. Strong verbs. No filler words. If it can be said in 5 words, use 5." },
+      { name: "Story-Led", desc: "Every piece of copy has a memory or moment behind it. Facts live inside stories." }
+    ],
+    sound_like: ["Confident","Warm","Specific","Memorable","Moody","Premium-casual","Story-driven"],
+    never_sound_like: ["Corporate","Street food","Over-excited","Generic","Apologetic"],
+    contexts: [
+      { context: "Instagram caption", tone: "Moody, punchy, 1 to 2 lines", example: "Some things are just better fresh." },
+      { context: "Menu description", tone: "Specific, sensory, no fluff", example: "Hand-stretched. Fried in avocado oil. Finished with a crack of salt." },
+      { context: "Campaign headline", tone: "Bold, declarative, no question marks", example: "Fried Better." },
+      { context: "Press and PR", tone: "Authoritative, category defining", example: "Ugly Donuts is building the next great American meal category." },
+      { context: "Packaging", tone: "Warm, intimate, one sentence", example: "A bite to remember." },
+      { context: "Drinks", tone: "Soft, poetic, memory forward", example: "When a sip becomes a memory." }
+    ],
     dos: [
-      "Lead with the emotional why before any operational detail",
-      "Let product photography carry the moment",
-      "Short, confident, plain lines. Sentence case.",
-      "Every piece should feel considered, never mass produced"
+      "Lead with the memory and the feeling before any product or offer detail",
+      "Short sentences, strong verbs, no filler. Five words beat ten.",
+      "Keep facts inside stories, never a spec sheet",
+      "Let the product photography carry the moment"
     ],
     donts: [
       "No em dashes, ever. Use commas, periods, parentheses or colons.",
-      "No hype, no sales-closing pressure, no 'limited time only!!'",
-      "No AI-looking dark navy and gold. Anchor in the real palette.",
-      "No gradients or glassmorphism on brand pieces",
+      "Never call us street food and never compare us to fast food",
+      "No hype, no discount urgency, no over-excitement",
+      "Never improvise new taglines, use the official lines only",
       "Never recreate the wordmark as text or CSS"
     ]
   },
-  typography: {
-    display: "Warm high-contrast serif (Fraunces / Playfair family) used with restraint",
-    body: "Clean humanist sans (Inter)",
-    note: "Big quiet type, generous white space. Restraint is the premium signal."
+  taglines: [
+    { line: "A bite to remember", kind: "Primary tagline", use: "Default on all materials. Packaging, lockups, storefront, website, campaign sign-offs." },
+    { line: "Individually handcrafted", kind: "Product promise", use: "Packaging tagline, sub-wordmark on boxes. Signals quality and care." },
+    { line: "Love at first bite", kind: "Secondary tagline", use: "Social media, campaign headlines, in-store moments. Warmer, more playful." },
+    { line: "When a sip becomes a memory.", kind: "Drink-specific line", use: "Cup packaging, drink menu, drink campaign materials only." },
+    { line: "Good things stay forever.", kind: "Memory line", use: "Story page, brand storytelling, packaging inserts. Pairs with the founder memory." },
+    { line: "Every store. Same standard.", kind: "Operations promise", use: "Locations page, franchise materials, training. Signals consistency at scale." },
+    { line: "Simple ingredients. Honest work.", kind: "Craft line", use: "Craft and process storytelling, menu boards, behind the scenes content." },
+    { line: "Since 2021", kind: "Establishment marker", use: "Circle badge, small print, Est. 2021 variant on the logo badge." }
+  ],
+  tagline_rule: "Memory is the theme. Every official line touches the idea of memory. These are the only lines, do not improvise variations.",
+  naming: [
+    { pattern: "The Ug prefix", rule: "Proprietary products get the Ug- treatment, it makes generic categories ownable.", examples: "Ugnut, Ugbite Set, Ugly Boba, Ugly Bar" },
+    { pattern: "Corn dogs", rule: "[Topping or Style] plus \"Corn Dog\", descriptive, no invented names.", examples: "Hot Cheetos Corn Dog, Potato Corn Dog, Nude Corn Dog" },
+    { pattern: "Drinks", rule: "Evocative two-word names, a mood, not a description.", examples: "Midnight Lemonade, Dragon Passion, Sunset Peach, Taro Cloud" },
+    { pattern: "Quality anchor", rule: "Drink descriptions lead with \"premium real fruit syrup\" as the consistency signal.", examples: "Used across Refreshers, Boba, Coco Sips" }
+  ],
+  logo: {
+    marks: [
+      { name: "Horizontal wordmark", use: "Primary. Wide contexts: headers, banners, storefront signage." },
+      { name: "Stacked wordmark", use: "Square formats: cups, social profile, packaging panels." },
+      { name: "White / reversed wordmark", use: "On dark navy or dark photo backgrounds." },
+      { name: "\"ugly\" script mark", use: "Standalone handwritten script. Casual contexts, social overlays, merch." },
+      { name: "Circle badge, dark", use: "Corn dog and donut icon inside a circle, EST. 2021 at the base. On dark backgrounds." },
+      { name: "Circle badge, light", use: "Color illustration version on light or cream backgrounds. Golden tan food illustration." },
+      { name: "Avocado oil seal, light", use: "\"We Fry In 100% Avocado Oil\", olive green on cream. Packaging and marketing." },
+      { name: "Avocado oil seal, dark", use: "Cream or warm grey on dark. Dark mode packaging and digital contexts." }
+    ],
+    clear_space: "Always maintain minimum clear space equal to the cap height of the U in UGLY on all four sides.",
+    never: [
+      "Stretch or distort the wordmark",
+      "Recolor the ampersand to anything other than #e1661a",
+      "Recreate the logo in any other typeface",
+      "Place the color wordmark on a busy photo without a clear field"
+    ]
+  },
+  illustration: {
+    style: "All brand illustrations are black line art on white. Clean, hand-drawn feel, no fills, except the color circle badge version.",
+    items: [
+      { name: "The Donut Duo", use: "Two donut characters handing a box with both hands, the Korean two-handed gift gesture. Packaging insert, cultural storytelling, social content.", never: "Campaign hero images, too small to read." },
+      { name: "Corn Dog Handover", use: "Woman handing an oversized corn dog to an excited child. Warmth, joy, discovery. Packaging exterior, banners, web hero.", never: "Dark navy backgrounds, white lines disappear." },
+      { name: "Dancing Donuts", use: "Donut characters in motion. Playful energy for social, stickers, merch, animated content.", never: "Formal press or editorial materials." },
+      { name: "Doodle Wall Art", use: "Dense illustrated world with \"The Finest Ingredients\" and \"Taste of Korea\" woven in. In-store walls, background texture, large print.", never: "Small formats, illegible at small size." }
+    ]
+  },
+  photography: {
+    principles: [
+      { name: "Moody and dramatic", desc: "Dark backgrounds, controlled light sources, heavy shadows. Food as subject, not prop." },
+      { name: "Story over perfection", desc: "Real moments, real texture. Not overly styled or sanitized. Authentic, not amateur." },
+      { name: "Warm color grading", desc: "Golden, amber tones. No cold blue-grey filters. Every image should feel warm." },
+      { name: "What we avoid", desc: "Flat lays with props, bright white studio lighting, overly clean ad aesthetics, stock-photo feel." }
+    ],
+    brief: "Late-night diner energy meets editorial magazine. The food looks like it was made 30 seconds ago.",
+    spec: {
+      product: "The hero of every frame, always freshly made. Crisp textures, rich fillings, glossy finishes, natural melting.",
+      lighting: "Soft directional studio key light, natural highlights, rich shadows, gentle reflections, warm cinematic depth.",
+      surfaces: "Restrained neutral palette so the food stays the focus: charcoal, warm gray, espresso brown, taupe, natural stone.",
+      composition: "Hero product focus, generous negative space, clean hierarchy, balanced editorial framing, minimal distractions.",
+      typography: "Elegant serif headline, modern sans-serif support, minimal copy, in white or champagne gold. Type supports the food.",
+      feel: "Premium without formal, modern without cold, minimal without empty, playful without childish. Warm and inviting."
+    },
+    note: "Set palette is not the brand palette. Charcoal, stone and champagne tones are set-design colors for photography only."
+  },
+  signage: {
+    elements: [
+      { name: "Illuminated header sign", desc: "UGLY DONUTS & CORN DOGS in white letters with a red ampersand, backlit on dark fascia. Primary exterior identifier." },
+      { name: "Donut portal arch", desc: "Large oversized donut circle at the entrance with doodle wall art inside and a gold ring outer edge. Signature moment." },
+      { name: "Doodle wall border", desc: "The dense illustrated doodle pattern runs as a horizontal border along the lower interior wall." },
+      { name: "Menu boards", desc: "Digital screens above the counter. Dark background, product photography. Campaign specials on A-frame floor signs." },
+      { name: "Ugly Bar counter", desc: "\"Ugly Bar\" script label on the counter face. Signals the drinks station specifically." },
+      { name: "Seasonal decor", desc: "Floral arches such as cherry blossom are seasonal only, not permanent brand elements." }
+    ],
+    consistency: "The illuminated sign format, donut portal and doodle wall art are the three non-negotiable in-store elements across all locations."
   },
   logo_url: "",
   guidelines: ""
 };
 
-// Umma's Recipe starter DNA (a premium Korean syrup and pantry brand). Edit freely and upload the real logo.
+// Umma's Recipe starter DNA (a premium Korean syrup and pantry brand). Edit freely and upload the real book.
 const DEFAULT_DNA_UMMA = {
   name: "Umma's Recipe",
   philosophy: {
     tagline: "Made the way Umma made it",
+    mission: "Bring the taste of a Korean mother's kitchen to everyday tables, made slowly and honestly.",
+    feeling: "\"Someone took care of me.\"",
     why: "Every jar starts in a mother's kitchen. Umma's Recipe is the taste of being taken care of, made slowly, with real ingredients and nothing rushed.",
-    positioning: "A premium Korean syrup and pantry brand. Small batch, honest ingredients, quiet craft over noise."
+    founder_words: "",
+    heritage: "",
+    cultural_gesture: "",
+    story_order: "Care first, then the ingredients, then the craft.",
+    positioning: "A premium Korean syrup and pantry brand. Small batch, honest ingredients, quiet craft over noise.",
+    positioning_rule: "Never positioned as a mass-market condiment or a diet product.",
+    pillars: [
+      { name: "Made slowly", desc: "Small batch, nothing rushed, nothing artificial." },
+      { name: "A mother's care", desc: "The feeling of being looked after, in a jar." },
+      { name: "Honest ingredients", desc: "Real fruit and real work, stated plainly." }
+    ]
   },
   colors: [
-    { name: "Honey Amber", hex: "#C98A3C", role: "Primary. Warm syrup, slow pour." },
-    { name: "Berry",       hex: "#8E3B4E", role: "Accent. Fruit, depth, richness." },
-    { name: "Ink Black",   hex: "#1A1512", role: "Text and wordmark." },
-    { name: "Cream",       hex: "#FBF6EE", role: "Background. Calm and warm." },
-    { name: "Paper",       hex: "#FFFFFF", role: "Clean base for the product." }
+    { name: "Honey Amber", hex: "#C98A3C", role: "Primary. Warm syrup, slow pour.", never: "Body copy on cream, too low contrast." },
+    { name: "Berry",       hex: "#8E3B4E", role: "Accent. Fruit, depth, richness.", never: "Large flat backgrounds." },
+    { name: "Ink Black",   hex: "#1A1512", role: "Text and wordmark.", never: "" },
+    { name: "Cream",       hex: "#FBF6EE", role: "Background. Calm and warm.", never: "Text at any size." },
+    { name: "Paper",       hex: "#FFFFFF", role: "Clean base for the product.", never: "" }
   ],
+  color_rule: "",
+  typography: {
+    display: "Warm serif used with restraint",
+    body: "Clean humanist sans (Inter)",
+    note: "Soft, spacious, homemade premium. Restraint reads as quality.",
+    fonts: [],
+    script_note: ""
+  },
   voice: {
     tone: "Warm, homemade, quietly premium. Personal and unhurried, like a note from your mother.",
+    traits: [
+      { name: "Caring", desc: "Speaks the way a mother speaks, kind and unhurried." },
+      { name: "Honest", desc: "Plain words about real ingredients, no claims we cannot keep." },
+      { name: "Quiet", desc: "Calm and spacious. Never loud, never salesy." }
+    ],
+    sound_like: ["Warm","Homemade","Honest","Calm","Premium"],
+    never_sound_like: ["Clinical","Diet-focused","Hyped","Corporate"],
+    contexts: [],
     dos: [
       "Lead with care and memory before ingredients or claims",
       "Let the jar and the pour carry the moment",
@@ -363,11 +547,15 @@ const DEFAULT_DNA_UMMA = {
       "Never recreate the wordmark as text or CSS"
     ]
   },
-  typography: {
-    display: "Warm serif used with restraint",
-    body: "Clean humanist sans (Inter)",
-    note: "Soft, spacious, homemade-premium. Restraint reads as quality."
-  },
+  taglines: [
+    { line: "Made the way Umma made it", kind: "Primary tagline", use: "Default on packaging and all materials." }
+  ],
+  tagline_rule: "",
+  naming: [],
+  logo: { marks: [], clear_space: "", never: [] },
+  illustration: { style: "", items: [] },
+  photography: { principles: [], brief: "", spec: {}, note: "" },
+  signage: { elements: [], consistency: "" },
   logo_url: "",
   guidelines: ""
 };
@@ -387,24 +575,95 @@ function learningsBlock(learnings) {
 }
 
 function buildBrandSystem(dna, learnings) {
-  const c = (dna.colors || []).map(x => `${x.name} ${x.hex} (${x.role})`).join("; ");
-  return [
-    `You are the Brand Director for ${dna.name || "this brand"}. Every idea you produce must sound and look like this brand, in its own voice. The brand's why always leads.`,
-    "",
-    `PHILOSOPHY / WHY: ${dna.philosophy?.why || ""}`,
-    `TAGLINE: ${dna.philosophy?.tagline || ""}`,
-    `POSITIONING: ${dna.philosophy?.positioning || ""}`,
-    `VOICE: ${dna.voice?.tone || ""}`,
-    `PALETTE: ${c}`,
-    `TYPOGRAPHY: display = ${dna.typography?.display}; body = ${dna.typography?.body}. ${dna.typography?.note || ""}`,
-    `DO: ${(dna.voice?.dos || []).join(" | ")}`,
-    `DO NOT: ${(dna.voice?.donts || []).join(" | ")}`,
-    "",
-    "Hard rules: never use em dashes. Never invent facts. Restraint over hype. Warm, human, premium.",
-    dna.guidelines ? `\nFULL BRAND BOOK GUIDELINES (this is our official brand book, follow it closely for color codes, typography, logo use, imagery and tone):\n${String(dna.guidelines).slice(0, 8000)}` : "",
-    learningsBlock(learnings)
-  ].join("\n");
+  const L = [];
+  const add = (label, val) => { if (val && String(val).trim()) L.push(`${label}: ${val}`); };
+  const p = dna.philosophy || {}, v = dna.voice || {}, t = dna.typography || {};
+
+  L.push(`You are the Brand Director for ${dna.name || "this brand"}. Every idea you produce must sound and look like this brand, in its own voice. The brand's why always leads.`);
+  L.push("");
+  L.push("== STORY AND POSITIONING ==");
+  add("TAGLINE", p.tagline); add("MISSION", p.mission); add("THE ONE FEELING WE SELL", p.feeling);
+  add("FOUNDER MEMORY / WHY", p.why); add("FOUNDER WORDS", p.founder_words);
+  add("HERITAGE", p.heritage); add("CULTURAL GESTURE", p.cultural_gesture);
+  add("STORY ORDER RULE", p.story_order); add("POSITIONING", p.positioning); add("POSITIONING RULE", p.positioning_rule);
+  if ((p.pillars || []).length) L.push("PILLARS: " + p.pillars.map(x => `${x.name} (${x.desc})`).join(" | "));
+
+  L.push("");
+  L.push("== COLOR SYSTEM (use these exact codes) ==");
+  (dna.colors || []).forEach(c => {
+    L.push(`- ${c.name} ${c.hex || ""}${c.pantone ? " / " + c.pantone : ""}: ${c.role || ""}${c.never ? ` NEVER: ${c.never}` : ""}`);
+  });
+  add("COLOR RULE", dna.color_rule);
+
+  L.push("");
+  L.push("== TYPOGRAPHY ==");
+  if ((t.fonts || []).length) t.fonts.forEach(f => L.push(`- ${f.name}: ${f.role}. Weights ${f.weights}. ${f.rule || ""}`));
+  else { add("DISPLAY", t.display); add("BODY", t.body); }
+  add("TYPE NOTE", t.note); add("SCRIPT NOTE", t.script_note);
+
+  L.push("");
+  L.push("== VOICE ==");
+  add("TONE", v.tone);
+  if ((v.traits || []).length) L.push("TRAITS: " + v.traits.map(x => `${x.name} (${x.desc})`).join(" | "));
+  if ((v.sound_like || []).length) L.push("WE SOUND LIKE: " + v.sound_like.join(", "));
+  if ((v.never_sound_like || []).length) L.push("WE NEVER SOUND LIKE: " + v.never_sound_like.join(", "));
+  if ((v.contexts || []).length) v.contexts.forEach(c => L.push(`- ${c.context}: ${c.tone}. Example: "${c.example}"`));
+  if ((v.dos || []).length) L.push("DO: " + v.dos.join(" | "));
+  if ((v.donts || []).length) L.push("DO NOT: " + v.donts.join(" | "));
+
+  if ((dna.taglines || []).length) {
+    L.push("");
+    L.push("== OFFICIAL LINES (use these exact lines, never improvise variations) ==");
+    dna.taglines.forEach(x => L.push(`- "${x.line}" (${x.kind}): ${x.use}`));
+    add("TAGLINE RULE", dna.tagline_rule);
+  }
+  if ((dna.naming || []).length) {
+    L.push("");
+    L.push("== NAMING CONVENTIONS ==");
+    dna.naming.forEach(n => L.push(`- ${n.pattern}: ${n.rule} Examples: ${n.examples}`));
+  }
+  const lg = dna.logo || {};
+  if ((lg.marks || []).length || lg.clear_space || (lg.never || []).length) {
+    L.push("");
+    L.push("== LOGO SYSTEM ==");
+    (lg.marks || []).forEach(m => L.push(`- ${m.name}: ${m.use}`));
+    add("CLEAR SPACE", lg.clear_space);
+    if ((lg.never || []).length) L.push("LOGO NEVER: " + lg.never.join(" | "));
+  }
+  const il = dna.illustration || {};
+  if (il.style || (il.items || []).length) {
+    L.push("");
+    L.push("== ILLUSTRATION ==");
+    add("STYLE", il.style);
+    (il.items || []).forEach(i => L.push(`- ${i.name}: ${i.use}${i.never ? ` NEVER: ${i.never}` : ""}`));
+  }
+  const ph = dna.photography || {};
+  if ((ph.principles || []).length || ph.brief || (ph.spec && Object.keys(ph.spec).length)) {
+    L.push("");
+    L.push("== PHOTOGRAPHY AND IMAGE DIRECTION ==");
+    (ph.principles || []).forEach(x => L.push(`- ${x.name}: ${x.desc}`));
+    add("PHOTO BRIEF", ph.brief);
+    const sp = ph.spec || {};
+    add("PRODUCT", sp.product); add("LIGHTING", sp.lighting); add("SURFACES AND SET", sp.surfaces);
+    add("COMPOSITION", sp.composition); add("ON-IMAGE TYPE", sp.typography); add("OVERALL FEEL", sp.feel);
+    add("PHOTO NOTE", ph.note);
+  }
+  const sg = dna.signage || {};
+  if ((sg.elements || []).length || sg.consistency) {
+    L.push("");
+    L.push("== SIGNAGE AND IN-STORE ==");
+    (sg.elements || []).forEach(e => L.push(`- ${e.name}: ${e.desc}`));
+    add("CONSISTENCY", sg.consistency);
+  }
+
+  L.push("");
+  L.push("Hard rules: never use em dashes. Never invent facts or new taglines. Restraint over hype. Warm, human, premium.");
+  if (dna.guidelines) L.push(`\n== FULL BRAND BOOK NOTES ==\n${String(dna.guidelines).slice(0, 12000)}`);
+  L.push(learningsBlock(learnings));
+  return L.join("\n");
 }
+
+
 
 const IMG_STYLE_SUFFIX =
   " Style: premium restrained food-brand art direction for Ugly Donuts. Warm golden tan (#EABF70), brick red, cream and paper white palette. Natural soft light, appetizing, editorial, Krispy Kreme-level restraint. No gradients, no glassmorphism, no stocky AI gloss. Clean negative space.";
@@ -417,6 +676,11 @@ const TASKS = [
   { id: "menu",         label: "Menu board",     size: "1024x1536", hint: "Menu / signage layout" },
   { id: "packaging",    label: "Packaging",      size: "1024x1024", hint: "Boxes, sleeves, cups" },
   { id: "free",         label: "Free brief",     size: "1024x1024", hint: "Anything, describe it" }
+];
+const SIZES = [
+  { id: "1024x1024", label: "Square",    ratio: "1:1" },
+  { id: "1024x1536", label: "Portrait",  ratio: "2:3" },
+  { id: "1536x1024", label: "Landscape", ratio: "3:2" }
 ];
 const KINDS = ["all","poster","photo","logo","store","interior","menu","packaging","signage","deck","render","other"];
 const KIND_LABEL = { store:"store design", interior:"interior", poster:"poster", photo:"photo", logo:"logo", menu:"menu", packaging:"packaging", signage:"signage", deck:"deck", render:"render", other:"other" };
@@ -738,6 +1002,16 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
     }
   }
   const d = edit ? draft : dna;
+  const ADV = ["philosophy","taglines","tagline_rule","naming","logo","illustration","photography","signage","color_rule","typography","voice","colors"];
+  const advOf = (o)=>{ const x={}; ADV.forEach(k=>{ if(o[k]!==undefined) x[k]=o[k]; }); return JSON.stringify(x,null,2); };
+  const [advText, setAdvText] = useState(()=>advOf(dna));
+  const [advErr, setAdvErr] = useState("");
+  useEffect(()=>{ if(edit) { setAdvText(advOf(draft)); setAdvErr(""); } }, [edit]);
+  function onAdv(v){
+    setAdvText(v);
+    try { const j = JSON.parse(v); setAdvErr(""); setDraft({ ...draft, ...j }); }
+    catch(e){ setAdvErr("Not valid yet: " + e.message); }
+  }
   const upd = (path, val) => {
     const n = JSON.parse(JSON.stringify(draft));
     let o = n; for (let i=0;i<path.length-1;i++) o = o[path[i]];
@@ -768,8 +1042,18 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
           <textarea className="fld" rows={3} value={d.philosophy.positioning} onChange={e=>upd(["philosophy","positioning"],e.target.value)} />
         </> : <>
           <div className="dir-head serif" style={{fontSize:26,marginBottom:10}}>{d.philosophy.tagline}</div>
-          <p style={{fontSize:15,lineHeight:1.6,color:"var(--ink-soft)",maxWidth:660}}>{d.philosophy.why}</p>
-          <p className="mut" style={{marginTop:14,lineHeight:1.55,maxWidth:660}}>{d.philosophy.positioning}</p>
+          {d.philosophy.feeling&&<p className="specline"><b>The one feeling we sell</b> {d.philosophy.feeling}</p>}
+          {d.philosophy.mission&&<p className="specline"><b>Mission</b> {d.philosophy.mission}</p>}
+          <p style={{fontSize:15,lineHeight:1.6,color:"var(--ink-soft)",maxWidth:680,marginTop:10}}>{d.philosophy.why}</p>
+          {d.philosophy.founder_words&&<p className="pullq serif">{d.philosophy.founder_words}</p>}
+          {d.philosophy.heritage&&<p className="specline"><b>Heritage</b> {d.philosophy.heritage}</p>}
+          {d.philosophy.cultural_gesture&&<p className="specline"><b>Cultural gesture</b> {d.philosophy.cultural_gesture}</p>}
+          <p className="mut" style={{marginTop:14,lineHeight:1.55,maxWidth:680}}>{d.philosophy.positioning}</p>
+          {d.philosophy.story_order&&<div className="ruleblock"><b>Story order</b> {d.philosophy.story_order}</div>}
+          {d.philosophy.positioning_rule&&<div className="ruleblock"><b>Positioning rule</b> {d.philosophy.positioning_rule}</div>}
+          {(d.philosophy.pillars||[]).length>0&&<div className="pillars">
+            {d.philosophy.pillars.map((p,i)=><div className="pillar" key={i}><div className="pillar-n">{p.name}</div><div className="pillar-d">{p.desc}</div></div>)}
+          </div>}
         </>}
       </div>
 
@@ -820,11 +1104,12 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
                 {edit
                   ? <><input className="fld btn-sm" value={c.name} onChange={e=>{const n=[...draft.colors];n[i]={...n[i],name:e.target.value};setDraft({...draft,colors:n});}} style={{marginBottom:6,padding:"6px 8px"}}/>
                       <input className="fld btn-sm" value={c.hex} onChange={e=>{const n=[...draft.colors];n[i]={...n[i],hex:e.target.value};setDraft({...draft,colors:n});}} style={{padding:"6px 8px"}}/></>
-                  : <><div className="sw-name">{c.name}</div><div className="sw-hex">{c.hex}</div><div className="sw-role">{c.role}</div></>}
+                  : <><div className="sw-name">{c.name}</div><div className="sw-hex">{c.hex}{c.pantone?` · ${c.pantone}`:""}</div><div className="sw-role">{c.role}</div>{c.never?<div className="sw-never">Never: {c.never}</div>:null}</>}
               </div>
             </div>
           ))}
         </div>
+        {d.color_rule&&<div className="ruleblock" style={{marginTop:14}}>{d.color_rule}</div>}
       </div>
 
       <div className="two">
@@ -833,11 +1118,25 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
           {edit
             ? <textarea className="fld" rows={3} value={d.voice.tone} onChange={e=>upd(["voice","tone"],e.target.value)} />
             : <p style={{fontSize:14,lineHeight:1.6,color:"var(--ink-soft)"}}>{d.voice.tone}</p>}
+          {!edit&&(d.voice.traits||[]).length>0&&<div className="traits">
+            {d.voice.traits.map((t,i)=><div className="trait" key={i}><b>{t.name}</b><span>{t.desc}</span></div>)}
+          </div>}
+          {!edit&&(d.voice.sound_like||[]).length>0&&<div style={{marginTop:12}}>
+            <div className="mini-h">We sound like</div>
+            <div className="tagrow">{d.voice.sound_like.map((x,i)=><span className="ttag" key={i}>{x}</span>)}</div>
+          </div>}
+          {!edit&&(d.voice.never_sound_like||[]).length>0&&<div style={{marginTop:10}}>
+            <div className="mini-h">We never sound like</div>
+            <div className="tagrow">{d.voice.never_sound_like.map((x,i)=><span className="ttag off" key={i}>{x}</span>)}</div>
+          </div>}
           <div style={{height:18}}></div>
           <div className="card-h">Typography</div>
-          <p className="mut" style={{lineHeight:1.55}}><b style={{color:"var(--ink)"}}>Display</b> · {d.typography.display}</p>
-          <p className="mut" style={{lineHeight:1.55,marginTop:4}}><b style={{color:"var(--ink)"}}>Body</b> · {d.typography.body}</p>
+          {(d.typography.fonts||[]).length>0
+            ? d.typography.fonts.map((f,i)=><p className="mut" style={{lineHeight:1.5,marginTop:i?8:0}} key={i}><b style={{color:"var(--ink)"}}>{f.name}</b> · {f.role}{f.weights?` · ${f.weights}`:""}{f.rule?<><br/><span style={{fontStyle:"italic"}}>{f.rule}</span></>:null}</p>)
+            : <><p className="mut" style={{lineHeight:1.55}}><b style={{color:"var(--ink)"}}>Display</b> · {d.typography.display}</p>
+                <p className="mut" style={{lineHeight:1.55,marginTop:4}}><b style={{color:"var(--ink)"}}>Body</b> · {d.typography.body}</p></>}
           <p className="mut" style={{lineHeight:1.55,marginTop:6,fontStyle:"italic"}}>{d.typography.note}</p>
+          {d.typography.script_note&&<p className="mut" style={{lineHeight:1.5,marginTop:6}}>{d.typography.script_note}</p>}
         </div>
         <div className="card">
           <div className="card-h">Do and don't</div>
@@ -849,6 +1148,98 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
           </ul>
         </div>
       </div>
+
+      {(d.taglines||[]).length>0&&
+        <div className="card">
+          <div className="card-h">Official lines</div>
+          <div className="specgrid">
+            {d.taglines.map((t,i)=>(
+              <div className="specrow" key={i}>
+                <div className="spec-a serif">{t.line}</div>
+                <div className="spec-b"><b>{t.kind}</b><span>{t.use}</span></div>
+              </div>
+            ))}
+          </div>
+          {d.tagline_rule&&<div className="ruleblock" style={{marginTop:12}}>{d.tagline_rule}</div>}
+        </div>}
+
+      {(d.naming||[]).length>0&&
+        <div className="card">
+          <div className="card-h">Naming conventions</div>
+          <div className="specgrid">
+            {d.naming.map((n,i)=>(
+              <div className="specrow" key={i}>
+                <div className="spec-a">{n.pattern}</div>
+                <div className="spec-b"><span>{n.rule}</span><span className="mut" style={{marginTop:3}}>{n.examples}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>}
+
+      {((d.logo&&(d.logo.marks||[]).length)||(d.logo&&d.logo.clear_space))?
+        <div className="card">
+          <div className="card-h">Logo system</div>
+          <div className="specgrid">
+            {(d.logo.marks||[]).map((m,i)=>(
+              <div className="specrow" key={i}><div className="spec-a">{m.name}</div><div className="spec-b"><span>{m.use}</span></div></div>
+            ))}
+          </div>
+          {d.logo.clear_space&&<div className="ruleblock" style={{marginTop:12}}><b>Clear space</b> {d.logo.clear_space}</div>}
+          {(d.logo.never||[]).length>0&&<ul className="dolist dont" style={{marginTop:12}}>
+            {d.logo.never.map((x,i)=><li key={i}><span className="mk">✕</span><span>{x}</span></li>)}
+          </ul>}
+        </div>:null}
+
+      {((d.illustration&&(d.illustration.items||[]).length)||(d.illustration&&d.illustration.style))?
+        <div className="card">
+          <div className="card-h">Illustration system</div>
+          {d.illustration.style&&<div className="ruleblock" style={{marginBottom:12}}>{d.illustration.style}</div>}
+          <div className="specgrid">
+            {(d.illustration.items||[]).map((it,i)=>(
+              <div className="specrow" key={i}>
+                <div className="spec-a">{it.name}</div>
+                <div className="spec-b"><span>{it.use}</span>{it.never?<span className="never-t">Never on: {it.never}</span>:null}</div>
+              </div>
+            ))}
+          </div>
+        </div>:null}
+
+      {((d.photography&&(d.photography.principles||[]).length)||(d.photography&&d.photography.brief))?
+        <div className="card">
+          <div className="card-h">Photography and image direction</div>
+          {(d.photography.principles||[]).length>0&&<div className="traits" style={{marginBottom:12}}>
+            {d.photography.principles.map((p,i)=><div className="trait" key={i}><b>{p.name}</b><span>{p.desc}</span></div>)}
+          </div>}
+          {d.photography.brief&&<div className="ruleblock" style={{marginBottom:12}}><b>Photo brief</b> {d.photography.brief}</div>}
+          {d.photography.spec&&Object.keys(d.photography.spec).length>0&&<div className="specgrid">
+            {[["product","Product"],["lighting","Lighting"],["surfaces","Surfaces and set"],["composition","Composition"],["typography","On-image type"],["feel","Overall feel"]]
+              .filter(([k])=>d.photography.spec[k])
+              .map(([k,label])=>(
+                <div className="specrow" key={k}><div className="spec-a">{label}</div><div className="spec-b"><span>{d.photography.spec[k]}</span></div></div>
+            ))}
+          </div>}
+          {d.photography.note&&<div className="ruleblock" style={{marginTop:12}}>{d.photography.note}</div>}
+        </div>:null}
+
+      {((d.signage&&(d.signage.elements||[]).length)||(d.signage&&d.signage.consistency))?
+        <div className="card">
+          <div className="card-h">Signage and in-store</div>
+          <div className="specgrid">
+            {(d.signage.elements||[]).map((e,i)=>(
+              <div className="specrow" key={i}><div className="spec-a">{e.name}</div><div className="spec-b"><span>{e.desc}</span></div></div>
+            ))}
+          </div>
+          {d.signage.consistency&&<div className="ruleblock" style={{marginTop:12}}>{d.signage.consistency}</div>}
+        </div>:null}
+
+      {edit&&
+        <div className="card">
+          <div className="card-h">All brand book sections (advanced)</div>
+          <p className="mut" style={{marginBottom:8,lineHeight:1.5}}>Everything the crew reads: story layers, official lines, naming, logo system, illustration, photography and signage. Edit as structured data. Invalid text is not saved until it parses.</p>
+          <textarea className={"fld"+(advErr?" fld-err":"")} rows={16} value={advText} onChange={e=>onAdv(e.target.value)} spellCheck={false} style={{fontFamily:"ui-monospace,Menlo,monospace",fontSize:12,lineHeight:1.5}} />
+          {advErr?<div className="mut" style={{color:"var(--brick)",marginTop:6,fontSize:12}}>{advErr}</div>
+                 :<div className="mut" style={{marginTop:6,fontSize:12}}>Valid. Changes are in the draft, press Save DNA to keep them.</div>}
+        </div>}
 
       {(edit || (d.guidelines && d.guidelines.length)) &&
         <div className="card">
@@ -926,9 +1317,11 @@ function Library({ items, addItems, analyze, setItemKind, deleteItem, dna }) {
         : <div className="grid">
             {shown.map(it=>(
               <div className="tile" key={it.id}>
-                <div className="tile-img" style={{backgroundImage:it.thumb_url?`url(${it.thumb_url})`:"none"}}>
+                <div className={"tile-img"+(it.thumb_url?"":" doc")}>
+                  {it.thumb_url
+                    ? <img src={it.thumb_url} alt={it.title} loading="lazy" onError={(e)=>{ if(it.file_url && e.target.src!==it.file_url) e.target.src=it.file_url; }} />
+                    : <span className="tile-doc">{(it.tags||[]).includes("html")?"HTML":"FILE"}</span>}
                   <span className="tile-kind">{KIND_LABEL[it.kind]||it.kind}</span>
-                  {!it.thumb_url&&<span className="tile-doc">{(it.tags||[]).includes("html")?"HTML":"FILE"}</span>}
                 </div>
                 <div className="tile-body">
                   <div className="tile-title">{it.title}</div>
@@ -966,6 +1359,7 @@ function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }
   const [fb, setFb] = useState("");           // feedback note
   const [learned, setLearned] = useState(""); // toast after learning
   const [fbBusy, setFbBusy] = useState(false);
+  const [size, setSize] = useState(TASKS[0].size);
   const [refs, setRefs] = useState([]);       // reference images the director should consider
   const [refBusy, setRefBusy] = useState(false);
   const refInput = useRef(null);
@@ -1001,7 +1395,8 @@ function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }
     try {
       const system = buildBrandSystem(dna, learnings);
       const refNote = refs.length ? `The founder attached ${refs.length} reference image${refs.length>1?"s":""}. Study ${refs.length>1?"them":"it"} for mood, composition, subject and styling, and let ${refs.length>1?"them":"it"} guide your concept and the image_prompt, while staying in our brand voice.\n\n` : "";
-      const ask = `Task type: ${taskObj.label} (${taskObj.hint}).\n${refNote}Brief from the founder: "${brief}"\n\n`+
+      const szObj = SIZES.find(x=>x.id===size) || SIZES[0];
+      const ask = `Task type: ${taskObj.label} (${taskObj.hint}).\nOutput format: ${szObj.label} ${szObj.ratio} at ${size}. Compose for this shape, and say so in the image_prompt.\n${refNote}Brief from the founder: "${brief}"\n\n`+
         `As Brand Director, respond with ONLY a JSON object, no prose, with these keys:\n`+
         `{"concept": string (1-2 sentences, the idea and the feeling),`+
         `"headline": string (short, on-brand, may be empty for pure design tasks),`+
@@ -1021,7 +1416,7 @@ function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }
   async function render() {
     setErr(""); setPhase("rendering");
     try {
-      const { b64 } = await fnCall("ai-image", { prompt, size: taskObj.size });
+      const { b64 } = await fnCall("ai-image", { prompt, size });
       const url = `data:image/png;base64,${b64}`;
       setImg({ b64, url });
       setPhase("done");
@@ -1062,7 +1457,7 @@ function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }
 
       <div className="card">
         <div className="tasks">
-          {TASKS.map(t=><button key={t.id} className={"task"+(task===t.id?" on":"")} onClick={()=>setTask(t.id)}>{t.label}</button>)}
+          {TASKS.map(t=><button key={t.id} className={"task"+(task===t.id?" on":"")} onClick={()=>{setTask(t.id);setSize(t.size);}}>{t.label}</button>)}
         </div>
         <label className="lbl">Brief</label>
         <textarea className="fld" rows={3} value={brief} onChange={e=>setBrief(e.target.value)}
@@ -1084,11 +1479,24 @@ function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }
           </div>
           {refs.length>0&&<div className="mut" style={{fontSize:11.5,marginTop:8}}>The director will study {refs.length} reference{refs.length>1?"s":""} for mood and composition.</div>}
         </div>
+
+        <div className="refs">
+          <label className="lbl" style={{marginBottom:9}}>Size and shape</label>
+          <div className="sizes">
+            {SIZES.map(sz=>(
+              <button key={sz.id} className={"sizebtn"+(size===sz.id?" on":"")} onClick={()=>setSize(sz.id)}>
+                <span className={"sz-icon sz-"+sz.ratio.replace(":","-")}></span>
+                <span className="sz-l">{sz.label}</span>
+                <span className="sz-r">{sz.ratio} · {sz.id.replace("x"," × ")}</span>
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="row" style={{marginTop:12}}>
           <button className="btn btn-brick" onClick={direct} disabled={directing||rendering||!brief.trim()}>
             {directing?<span className="spin"></span>:null}{directing?"Directing":"Direct it"}
           </button>
-          <span className="mut">{taskObj.hint} · {taskObj.size.replace("x"," × ")}</span>
+          <span className="mut">{taskObj.hint} · {size.replace("x"," × ")}</span>
         </div>
         {err&&<div className="auth-err" style={{textAlign:"left"}}>{err}</div>}
 
@@ -1393,7 +1801,7 @@ function App() {
       try {
         if(LOCAL){
           let thumb, kind="other", tags=[];
-          if(k==="image"){ const s=await shrinkImage(f, 2000, "image/jpeg", 0.82); thumb=URL.createObjectURL(s.blob); kind="poster"; }
+          if(k==="image"){ thumb=URL.createObjectURL(f); kind="poster"; }
           else if(k==="pdf"){ const t=await pdfFirstPageThumb(f); thumb=URL.createObjectURL(t.blob); kind="deck"; }
           else if(k==="html"){ thumb=""; kind="other"; tags=["html"]; }
           if(override) kind=override;
@@ -1407,10 +1815,18 @@ function App() {
         const safe = f.name.replace(/[^\w.\-]/g,"_");
         let file_url, thumb_url="", kind="other", tags=[];
         if(k==="image"){
-          const s = await shrinkImage(f, 2000, "image/jpeg", 0.82);
-          await sb.storage.from("library").upload(`${stamp}-${safe}.jpg`, s.blob, { contentType:"image/jpeg" });
-          file_url = sb.storage.from("library").getPublicUrl(`${stamp}-${safe}.jpg`).data.publicUrl;
-          thumb_url = file_url; kind="poster";
+          // keep the original exactly as uploaded
+          await sb.storage.from("library").upload(`${stamp}-${safe}`, f, { contentType: f.type||"image/jpeg" });
+          file_url = sb.storage.from("library").getPublicUrl(`${stamp}-${safe}`).data.publicUrl;
+          // a light preview only for fast grid loading, same aspect ratio, never shown cropped
+          try {
+            const s = await shrinkImage(f, 1400, "image/jpeg", 0.82);
+            if (s && s.blob && s.blob.size < f.size) {
+              await sb.storage.from("library").upload(`${stamp}-thumb.jpg`, s.blob, { contentType:"image/jpeg" });
+              thumb_url = sb.storage.from("library").getPublicUrl(`${stamp}-thumb.jpg`).data.publicUrl;
+            } else { thumb_url = file_url; }
+          } catch { thumb_url = file_url; }
+          kind="poster";
         } else if(k==="pdf"){
           const t = await pdfFirstPageThumb(f);
           await sb.storage.from("library").upload(`${stamp}-${safe}`, f, { contentType:"application/pdf" });
@@ -1609,10 +2025,12 @@ function App() {
 
   return (
     <div className="shell">
+      {railOpen && <div className="rail-scrim" onClick={()=>setRailOpen(false)}></div>}
       <div className={"rail"+(railOpen?" open":"")}>
         <div className="rail-top">
           <img src={dna.logo_url || brandOf(brand).logo} alt={brandOf(brand).name} onError={(e)=>{e.target.src="/icons/logo.png";}} />
           <div><div className="rt-name serif">{brandOf(brand).short} Studio</div><div className="rt-sub">Brand</div></div>
+          <button className="rail-x" onClick={()=>setRailOpen(false)} aria-label="Close menu">✕</button>
         </div>
         <div className="brandsw">
           {BRANDS.map(b=>(

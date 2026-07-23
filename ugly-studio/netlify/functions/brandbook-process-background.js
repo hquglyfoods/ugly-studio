@@ -79,15 +79,36 @@ const EXTRACT_SYS = "You are extracting a brand's complete guidelines from its o
   "imagery and photography style, iconography and graphic elements, tone of voice with real example phrases, all do and do-not rules, layout and spacing, and any applications. " +
   "Output detailed plain-text notes under clear headings. Keep exact values verbatim. Never use em dashes.";
 
-const DNA_SYS = "You set a brand's core DNA from detailed notes taken across its entire brand book. Return ONLY a compact JSON object with exactly this shape and nothing else: " +
-  '{"name": string, "philosophy": {"tagline": string, "why": string, "positioning": string}, ' +
-  '"voice": {"tone": string, "dos": [string], "donts": [string]}, ' +
-  '"typography": {"display": string, "body": string, "note": string}, ' +
-  '"colors": [{"name": string, "hex": string, "role": string}]}. ' +
-  "colors must include EVERY color found with its exact hex and role. Keep strings concise so the JSON is complete and valid. Do not include a guidelines field. Never use em dashes.";
+// Synthesis is split into small, independent calls so no single JSON can be truncated.
+const SECTIONS = [
+  { key: "core", tokens: 2000,
+    spec: '{"name": string, "philosophy": {"tagline": string, "mission": string, "feeling": string, "why": string, "founder_words": string, "heritage": string, "cultural_gesture": string, "story_order": string, "positioning": string, "positioning_rule": string, "pillars": [{"name": string, "desc": string}]}}',
+    ask: "Capture the brand mission, the one feeling it sells, the founder memory and words, heritage story, cultural gestures, the rule for what order the story is told in, positioning and any positioning rule, and the brand pillars." },
+  { key: "color_type", tokens: 2200,
+    spec: '{"colors": [{"name": string, "hex": string, "pantone": string, "role": string, "never": string}], "color_rule": string, "typography": {"display": string, "body": string, "note": string, "script_note": string, "fonts": [{"name": string, "role": string, "weights": string, "rule": string}]}}',
+    ask: "Capture EVERY color with its exact hex, any Pantone, what it is used for and what it must never be used for, plus any rule governing the colors. Then every typeface with its role, weights and key rule." },
+  { key: "voice", tokens: 2200,
+    spec: '{"voice": {"tone": string, "traits": [{"name": string, "desc": string}], "sound_like": [string], "never_sound_like": [string], "contexts": [{"context": string, "tone": string, "example": string}], "dos": [string], "donts": [string]}}',
+    ask: "Capture the voice: tone, named traits with descriptions, the lists of what the brand sounds like and never sounds like, and the per-context tone table with its real examples." },
+  { key: "lines", tokens: 2000,
+    spec: '{"taglines": [{"line": string, "kind": string, "use": string}], "tagline_rule": string, "naming": [{"pattern": string, "rule": string, "examples": string}]}',
+    ask: "Capture every official tagline and brand saying with its kind and where it is used, any rule about improvising lines, and all naming conventions with examples." },
+  { key: "visual", tokens: 2600,
+    spec: '{"logo": {"marks": [{"name": string, "use": string}], "clear_space": string, "never": [string]}, "illustration": {"style": string, "items": [{"name": string, "use": string, "never": string}]}}',
+    ask: "Capture every logo mark and where it is used, the clear space rule, and every logo misuse rule. Then the illustration style and each illustration with where it is used and where it must never be used." },
+  { key: "photo_store", tokens: 2400,
+    spec: '{"photography": {"principles": [{"name": string, "desc": string}], "brief": string, "spec": {"product": string, "lighting": string, "surfaces": string, "composition": string, "typography": string, "feel": string}, "note": string}, "signage": {"elements": [{"name": string, "desc": string}], "consistency": string}}',
+    ask: "Capture the photography principles, the shorthand brief, the full photography specification, any note separating set colors from brand colors, and every in-store or signage element plus the consistency rule." },
+];
+
+const sectionSys = (spec, ask) =>
+  "You are building one section of a brand's DNA from detailed notes taken across its entire brand book. " +
+  ask + " Return ONLY a JSON object with exactly this shape and nothing else: " + spec + ". " +
+  "Use only what the notes support, leave a field as an empty string or empty array if the book does not cover it. " +
+  "Keep exact values (hex codes, font names, quoted lines) verbatim. Keep each string concise so the JSON stays complete and valid. Never use em dashes.";
 
 const GUIDE_SYS = "You write a brand's full guidelines reference from detailed notes taken across its entire brand book. " +
-  "Return plain text only (no JSON, no code fences). Organize under clear headings and cover EVERYTHING: mission and positioning, taglines, the full color system with every code, the typography scale, logo usage with clear space and misuse rules, imagery and photography, iconography, tone of voice with example phrases, do and do-not, layout and spacing, and applications. " +
+  "Return plain text only (no JSON, no code fences). Organize under clear headings and cover everything not already structured: any tables, measurements, file formats, applications, and any detail a designer would need. " +
   "Keep exact values verbatim. Be thorough. Never use em dashes.";
 
 exports.handler = async (event) => {
@@ -129,24 +150,30 @@ exports.handler = async (event) => {
       throw new Error("The job has no pages or text to read.");
     }
 
-    await setJob(jobId, { progress: "Organizing the brand DNA..." });
     const notesText = notes.join("\n\n----\n\n").slice(0, 90000);
-    const dnaText = await anthropic(DNA_SYS, `Notes from the full brand book:\n\n${notesText}\n\nReturn the brand DNA JSON now.`, 2500);
-    let dna = stripJSON(dnaText) || repairJSON(dnaText);
-
-    if (dna && dna.philosophy) {
-      await setJob(jobId, { progress: "Writing the full brand guidelines..." });
+    const dna = {};
+    for (let i = 0; i < SECTIONS.length; i++) {
+      const sec = SECTIONS[i];
+      await setJob(jobId, { progress: `Organizing the brand DNA (${i + 1} of ${SECTIONS.length + 1})...` });
       try {
-        const guide = await anthropic(GUIDE_SYS, `Notes from the full brand book:\n\n${notesText}\n\nWrite the full brand guidelines reference now.`, 4000);
-        if (guide) dna.guidelines = guide;
-      } catch { /* keep the DNA even if the guidelines pass fails */ }
+        const out = await anthropic(sectionSys(sec.spec, sec.ask), `Notes from the full brand book:\n\n${notesText}\n\nReturn this section as JSON now.`, sec.tokens);
+        const j = stripJSON(out) || repairJSON(out);
+        if (j) Object.assign(dna, j);
+      } catch (e) { /* one weak section must not lose the rest */ }
     }
+
+    await setJob(jobId, { progress: `Writing the full brand guidelines (${SECTIONS.length + 1} of ${SECTIONS.length + 1})...` });
+    try {
+      const guide = await anthropic(GUIDE_SYS, `Notes from the full brand book:\n\n${notesText}\n\nWrite the full guidelines reference now.`, 4000);
+      if (guide) dna.guidelines = guide;
+    } catch { /* keep the structured DNA even if this pass fails */ }
 
     // best-effort cleanup of the temporary page images
     if (pages.length) removeStoragePaths(pages).catch(()=>{});
 
-    if (dna && dna.philosophy) await setJob(jobId, { status: "done", progress: "Done.", result: dna });
-    else await setJob(jobId, { status: "error", error: "Could not assemble structured DNA. The model returned: " + String(dnaText || "").slice(0, 200) });
+    const gotSomething = dna.philosophy || (dna.colors && dna.colors.length) || dna.voice || dna.guidelines;
+    if (gotSomething) await setJob(jobId, { status: "done", progress: "Done.", result: dna });
+    else await setJob(jobId, { status: "error", error: "Could not assemble the brand DNA from this book." });
     return { statusCode: 200, body: "ok" };
   } catch (e) {
     await setJob(jobId, { status: "error", error: String(e && e.message || e) }).catch(()=>{});

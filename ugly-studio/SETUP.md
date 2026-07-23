@@ -115,15 +115,32 @@ manual re-run). Each tile shows Studying while it works. Every tile has Re-study
 category dropdown to reclassify at any time.
 
 
+## Brand DNA holds a full brand book
+Brand DNA is structured like a real style guide, not a summary: story layers (mission, the one feeling,
+founder memory and words, heritage, cultural gesture, story order and positioning rules, brand pillars),
+the complete color system (every color with hex, Pantone, what it is for and what it must never be used
+for, plus color rules), the typography system (every typeface with role, weights and its key rule),
+voice (tone, named traits, sound like and never sound like, and per-context examples), all official
+lines and naming conventions, the logo system (marks, clear space, misuse rules), illustration,
+photography direction with the full shoot spec, and signage. The crew reads all of it on every job.
+
 ## Brand book: accurate full read, no timeouts
-Read and draft DNA reads the ENTIRE brand book with the accurate model (claude-opus-4-8). The app
-renders and uploads the pages, then a background function reads the whole book (up to 15 minutes, so
-there is no 10 second timeout), captures every detail (all color codes, the full type scale, logo
-usage and clear space, imagery, tone with examples, do and do-not), and writes the result. The app
-shows live progress (Reading pages 5 to 7 of 24...) and you can keep working while it runs. When it
-finishes it fills the DNA plus a Full brand book guidelines field for you to review and Save. The crew
-then reads those full guidelines on every job. Requires SUPABASE_SERVICE_KEY, SUPABASE_URL and
-ANTHROPIC_API_KEY in Netlify (same ones used for push and AI).
+Read and draft DNA reads the ENTIRE brand book with the accurate model (claude-opus-4-8) in a
+background function (up to 15 minutes, so there is no 10 second timeout), then fills each DNA section
+in a separate pass so no answer is ever truncated. Progress shows live and you can keep working.
+Review the draft and press Save. Requires SUPABASE_SERVICE_KEY, SUPABASE_URL and ANTHROPIC_API_KEY in
+Netlify (the same ones used for push and AI).
+
+
+## Library keeps your original files
+Images are stored exactly as uploaded, at full resolution and in their original format. A small
+preview copy is generated only to keep the grid fast, and tiles display every image at its own
+aspect ratio, never cropped. Click through to the original at any time.
+
+## Choosing size and shape in the Studio
+Under the brief there is a Size and shape row: Square (1:1), Portrait (2:3) and Landscape (3:2).
+Each task starts on a sensible default (posters portrait, storefronts landscape, social square) and
+you can change it before directing. The director composes for the shape you picked.
 
 ## Files
 - `index.html` .............. the whole app
