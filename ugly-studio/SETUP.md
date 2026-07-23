@@ -155,6 +155,13 @@ completed, for example a color you already had picks up its Pantone and its neve
 In edit mode, Fill from brand book adds back anything missing (colors, lines, logo marks and so on)
 without removing or rewording a single thing you wrote.
 
+
+## Viewing a document
+View opens the document inside the studio. HTML brand books render as the real page rather than as
+source code, PDFs open in the reader, and images display directly. There is also Open in new tab.
+Files are stored with a correct content type even when the phone reports a blank one, which is what
+made an HTML book appear as raw code before.
+
 ## Files
 - `index.html` .............. the whole app
 - `netlify/functions/` ...... ai-text, ai-image, ai-vision, push-notify, lib/push (all zero npm deps)

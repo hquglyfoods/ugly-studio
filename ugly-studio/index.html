@@ -72,6 +72,11 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .rail-top img{width:38px;height:38px;object-fit:contain;}
 .rail-top .rt-name{font-size:16px;font-weight:600;line-height:1;}
 .rail-top .rt-sub{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-deep);font-weight:700;margin-top:3px;}
+.docview{background:#fff;border-radius:16px 16px 0 0;width:100%;height:88vh;display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 -10px 40px rgba(0,0,0,.2);}
+.docview-h{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--paper);}
+.docview-b{flex:1;overflow:auto;background:#fff;-webkit-overflow-scrolling:touch;}
+@media(min-width:821px){.docview{max-width:1100px;margin:0 auto;height:92vh;border-radius:16px;}}
 .docrow{display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:center;background:var(--paper);padding:11px 14px;}
 .doc-i{font-family:'Fraunces',serif;font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted2);
   border:1px solid var(--line2);border-radius:7px;padding:6px 0;text-align:center;}
@@ -961,6 +966,22 @@ function htmlToText(html){
     return t.replace(/\n{3,}/g,"\n\n").trim() || html;
   } catch { return html; }
 }
+// Devices often hand over a blank or generic type, which makes storage serve an HTML
+// brand book as plain text. Decide the type from the name when needed.
+function mimeFor(file){
+  const n = (file.name || "").toLowerCase();
+  if (/\.html?$/.test(n)) return "text/html";
+  if (/\.pdf$/.test(n)) return "application/pdf";
+  if (/\.png$/.test(n)) return "image/png";
+  if (/\.jpe?g$/.test(n)) return "image/jpeg";
+  if (/\.webp$/.test(n)) return "image/webp";
+  if (/\.gif$/.test(n)) return "image/gif";
+  if (/\.svg$/.test(n)) return "image/svg+xml";
+  if (/\.txt$/.test(n)) return "text/plain";
+  if (/\.md$/.test(n)) return "text/markdown";
+  const t = file.type || "";
+  return t && t !== "application/octet-stream" ? t : "application/octet-stream";
+}
 function fileKind(file){
   const t = file.type || "";
   if (t.startsWith("image/")) return "image";
@@ -1020,6 +1041,46 @@ function Auth({ onIn }) {
 }
 
 /* ========================================================= BRAND DNA == */
+function DocViewer({ doc, onClose }){
+  const [src, setSrc] = useState("");
+  const [err, setErr] = useState("");
+  useEffect(()=>{
+    let url = "";
+    (async()=>{
+      try {
+        const r = await fetch(doc.url);
+        if(!r.ok) throw new Error(`Could not open this document (${r.status})`);
+        const raw = await r.blob();
+        // re-type the blob so the browser renders it instead of showing the source
+        const type = doc.kind === "html" ? "text/html" : doc.kind === "pdf" ? "application/pdf" : (raw.type || "application/octet-stream");
+        url = URL.createObjectURL(new Blob([raw], { type }));
+        setSrc(url);
+      } catch(e){ setErr(e.message || String(e)); }
+    })();
+    return ()=>{ if(url) URL.revokeObjectURL(url); };
+  }, [doc.url]);
+  return (
+    <div className="sheet-bg" onClick={onClose}>
+      <div className="docview" onClick={e=>e.stopPropagation()}>
+        <div className="docview-h">
+          <div className="doc-n" style={{flex:1,minWidth:0}}>{doc.name}</div>
+          {src&&<a className="btn btn-ghost btn-sm" href={src} target="_blank" rel="noreferrer">Open in new tab</a>}
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>Close</button>
+        </div>
+        <div className="docview-b">
+          {err
+            ? <div className="mut" style={{padding:20}}>{err}</div>
+            : src
+              ? (doc.kind==="image"
+                  ? <img src={src} alt={doc.name} style={{width:"100%",display:"block"}} />
+                  : <iframe title={doc.name} src={src} sandbox="allow-same-origin" style={{width:"100%",height:"100%",border:"none",background:"#fff"}} />)
+              : <div className="mut" style={{padding:20}}><span className="spin"></span>Opening...</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BrandDNA({ dna, setDna, saveDna, setLogo, absorbBook, addDoc, reAbsorbDoc, removeDoc, brand }) {
   const [edit, setEdit] = useState(false);
   const [draft, setDraft] = useState(dna);
@@ -1029,6 +1090,7 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, absorbBook, addDoc, reAbsorbD
   const [bookProgress, setBookProgress] = useState("");
   const logoRef = useRef(null);
   const docRef = useRef(null);
+  const [viewDoc, setViewDoc] = useState(null);
   useEffect(()=>{ setDraft(dna); }, [dna]);
   async function save() { setBusy(true); await saveDna(draft); setBusy(false); setEdit(false); }
   async function onLogo(e){ const f=e.target.files&&e.target.files[0]; if(!f)return; setLogoBusy(true); try{ await setLogo(f); }catch(err){ alert(err.message); } finally{ setLogoBusy(false); if(logoRef.current) logoRef.current.value=""; } }
@@ -1186,7 +1248,7 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, absorbBook, addDoc, reAbsorbD
                   <div className="doc-s">{b.chars?`${b.chars.toLocaleString()} characters absorbed`:"No readable text found"}</div>
                 </div>
                 <div className="doc-a">
-                  {b.url&&<a className="tile-link" href={b.url} target="_blank" rel="noreferrer">View</a>}
+                  {b.url&&<button className="tile-link" onClick={()=>setViewDoc(b)}>View</button>}
                   <button className="tile-link" onClick={()=>onReAbsorb(b)} disabled={bookBusy}>Re-absorb</button>
                   <button className="tile-link del" onClick={()=>onRemoveDoc(b)} disabled={bookBusy}>Forget</button>
                 </div>
@@ -1348,6 +1410,8 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, absorbBook, addDoc, reAbsorbD
           {advErr?<div className="mut" style={{color:"var(--brick)",marginTop:6,fontSize:12}}>{advErr}</div>
                  :<div className="mut" style={{marginTop:6,fontSize:12}}>Valid. Changes are in the draft, press Save DNA to keep them.</div>}
         </div>}
+
+      {viewDoc&&<DocViewer doc={viewDoc} onClose={()=>setViewDoc(null)} />}
 
       {(edit || (d.guidelines && d.guidelines.length)) &&
         <div className="card">
@@ -1798,6 +1862,8 @@ function App() {
   const [nav, setNav] = useState("dna");
   const [brand, setBrand] = useState(()=>{ try { return localStorage.getItem("ugly_studio_brand")||"ugly"; } catch { return "ugly"; } });
   const [dna, setDna] = useState(defaultDNA(brand));
+  const dnaRef = useRef(dna);
+  useEffect(()=>{ dnaRef.current = dna; }, [dna]);
   const [items, setItems] = useState([]);
   const [creations, setCreations] = useState([]);
   const [learnings, setLearnings] = useState([]);
@@ -1873,10 +1939,17 @@ function App() {
   }
 
   /* ---- brand dna ---- */
+  // Sequential work (uploading several documents, re-absorbing, removing) must build on the
+  // result of the previous step. React state updates are not immediate, so a ref carries the
+  // latest document, otherwise each save would start from the same stale copy and overwrite
+  // the one before it, leaving only the last item.
   async function saveDna(next){
+    dnaRef.current = next;
     setDna(next);
     if(LOCAL) return;
-    await sb.from("brand_dna").upsert({ brand, doc:next, updated_at:new Date().toISOString() }, { onConflict:"brand" });
+    const { error } = await sb.from("brand_dna").upsert({ brand, doc:next, updated_at:new Date().toISOString() }, { onConflict:"brand" });
+    if(error) throw new Error("Could not save: "+error.message);
+    return next;
   }
 
   async function setLogo(file){
@@ -1886,8 +1959,7 @@ function App() {
     const { error } = await sb.storage.from("library").upload(path, blob, { contentType:"image/png", upsert:true });
     if(error){ alert("Logo upload failed: "+error.message); return; }
     const { data:pu } = sb.storage.from("library").getPublicUrl(path);
-    const next = {...dna, logo_url: pu.publicUrl};
-    await saveDna(next);
+    await saveDna({ ...(dnaRef.current||{}), logo_url: pu.publicUrl });
   }
 
   // Add one reference document: store the file, absorb it word for word, remember it.
@@ -1902,29 +1974,33 @@ function App() {
     }
     const safe = file.name.replace(/[^\w.\-]/g,"_");
     const path = `${brand}/docs/${Date.now()}-${safe}`;
-    const { error } = await sb.storage.from("library").upload(path, file, { contentType:file.type||"application/octet-stream", upsert:true });
+    const { error } = await sb.storage.from("library").upload(path, file, { contentType:mimeFor(file), upsert:true });
     if(error) throw new Error("Upload failed: "+error.message);
     entry.url = sb.storage.from("library").getPublicUrl(path).data.publicUrl;
-    const next = { ...dna, books:[ ...((dna.books)||[]), entry ] };
-    await saveDna(next);
+    const base = dnaRef.current || {};
+    await saveDna({ ...base, books:[ ...((base.books)||[]), entry ] });
     return entry;
   }
 
   async function reAbsorbDoc(id, onProgress){
-    const cur = ((dna.books)||[]).find(b=>b.id===id);
+    const cur = ((dnaRef.current.books)||[]).find(b=>b.id===id);
     if(!cur || !cur.url) throw new Error("That document is not on file.");
-    const r = await fetch(cur.url); const b = await r.blob();
-    const f = new File([b], cur.name||"document", { type:b.type });
+    const r = await fetch(cur.url);
+    if(!r.ok) throw new Error(`Could not fetch ${cur.name} (${r.status})`);
+    const b = await r.blob();
+    const f = new File([b], cur.name||"document", { type: b.type || "" });
     const text = await absorbBook(f, onProgress);
-    const next = { ...dna, books:((dna.books)||[]).map(x=>x.id===id?{ ...x, text:text||"", chars:(text||"").length, absorbed_at:new Date().toISOString() }:x) };
-    await saveDna(next);
+    if(!text || !text.trim()) throw new Error(`No readable text found in ${cur.name}`);
+    const base = dnaRef.current || {};
+    await saveDna({ ...base, books:((base.books)||[]).map(x=>x.id===id?{ ...x, text, chars:text.length, absorbed_at:new Date().toISOString() }:x) });
     return text;
   }
 
   async function removeDoc(id){
-    const cur = ((dna.books)||[]).find(b=>b.id===id);
-    const next = { ...dna, books:((dna.books)||[]).filter(x=>x.id!==id) };
-    if(cur && cur.url === (dna.brandbook&&dna.brandbook.url)){ next.brandbook = null; next.book_text = ""; }
+    const base = dnaRef.current || {};
+    const cur = ((base.books)||[]).find(b=>b.id===id);
+    const next = { ...base, books:((base.books)||[]).filter(x=>x.id!==id) };
+    if(cur && cur.url === (base.brandbook&&base.brandbook.url)){ next.brandbook = null; next.book_text = ""; }
     await saveDna(next);
     if(!LOCAL && cur && cur.url){
       const m=/\/object\/public\/library\/(.+)$/.exec(cur.url);
@@ -1954,6 +2030,10 @@ function App() {
       if(avg >= 80) return out.trim();
       report("This book is scanned, reading the pages...");
       return await transcribeInBackground(file, "pdf", onProgress);
+    }
+    if(/^text\//.test(mimeFor(file)) || /\.(txt|md|csv|json)$/i.test(file.name||"")){
+      report("Reading the document...");
+      return await file.text();
     }
     return await transcribeInBackground(file, "image", onProgress);
   }
@@ -2013,7 +2093,7 @@ function App() {
         let file_url, thumb_url="", kind="other", tags=[];
         if(k==="image"){
           // keep the original exactly as uploaded
-          await sb.storage.from("library").upload(`${stamp}-${safe}`, f, { contentType: f.type||"image/jpeg" });
+          await sb.storage.from("library").upload(`${stamp}-${safe}`, f, { contentType: mimeFor(f) });
           file_url = sb.storage.from("library").getPublicUrl(`${stamp}-${safe}`).data.publicUrl;
           // a light preview only for fast grid loading, same aspect ratio, never shown cropped
           try {
@@ -2031,7 +2111,7 @@ function App() {
           file_url = sb.storage.from("library").getPublicUrl(`${stamp}-${safe}`).data.publicUrl;
           thumb_url = sb.storage.from("library").getPublicUrl(`${stamp}-thumb.jpg`).data.publicUrl; kind="deck";
         } else {
-          await sb.storage.from("library").upload(`${stamp}-${safe}`, f, { contentType: f.type||"text/plain" });
+          await sb.storage.from("library").upload(`${stamp}-${safe}`, f, { contentType: mimeFor(f) });
           file_url = sb.storage.from("library").getPublicUrl(`${stamp}-${safe}`).data.publicUrl;
           kind="other"; if(k==="html") tags=["html"];
         }
