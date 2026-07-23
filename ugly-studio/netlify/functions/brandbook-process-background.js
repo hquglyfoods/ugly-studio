@@ -114,9 +114,14 @@ const GUIDE_SYS = "You write a brand's full guidelines reference from detailed n
   "Return plain text only (no JSON, no code fences). Organize under clear headings and cover everything not already structured: any tables, measurements, file formats, applications, and any detail a designer would need. " +
   "Keep exact values verbatim. Be thorough. Never use em dashes.";
 
+const TRANSCRIBE_SYS = "You are transcribing a brand book page so it can be used as the official reference. " +
+  "Write out ALL text on the page exactly as written, keeping headings, labels, tables, color codes, font names, measurements and quoted lines verbatim. " +
+  "For anything visual that carries meaning (logos, marks, illustrations, layouts, color swatches, photography), add a short factual description in square brackets so a designer knows what is there, for example [logo: horizontal wordmark, cream on dark]. " +
+  "Do not summarize, do not reorder, do not add commentary. Never use em dashes.";
+
 exports.handler = async (event) => {
-  let jobId;
-  try { jobId = JSON.parse(event.body || "{}").jobId; } catch {}
+  let jobId, mode;
+  try { const b = JSON.parse(event.body || "{}"); jobId = b.jobId; mode = b.mode; } catch {}
   if (!jobId) return { statusCode: 400, body: "no jobId" };
   if (!process.env.ANTHROPIC_API_KEY || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
     await setJob(jobId, { status: "error", error: "Server env not set (ANTHROPIC_API_KEY / SUPABASE_URL / SUPABASE_SERVICE_KEY)" }).catch(()=>{});
@@ -127,7 +132,29 @@ exports.handler = async (event) => {
     const rows = await sbREST(`brandbook_jobs?id=eq.${jobId}&select=*`);
     const job = rows && rows[0];
     if (!job) return { statusCode: 404, body: "job not found" };
+    const jobMode = mode || job.mode || "structure";
     await setJob(jobId, { status: "running", progress: "Starting to read the brand book...", error: null });
+
+    // Verbatim transcription: keep the book as it is written, no restructuring.
+    if (jobMode === "transcribe") {
+      const pages = Array.isArray(job.pages) ? job.pages : [];
+      if (!pages.length) throw new Error("The job has no pages to read.");
+      const out = [];
+      const BATCH = 2;
+      for (let i = 0; i < pages.length; i += BATCH) {
+        const slice = pages.slice(i, i + BATCH);
+        await setJob(jobId, { progress: `Reading pages ${i + 1} to ${Math.min(i + BATCH, pages.length)} of ${pages.length}...` });
+        const imgs = [];
+        for (const u of slice) imgs.push(await urlToImageBlock(u));
+        const t = await anthropic(TRANSCRIBE_SYS, [...imgs, { type: "text", text: `Transcribe pages ${i + 1} to ${Math.min(i + BATCH, pages.length)} exactly.` }], 4000);
+        out.push(`\n\n[page ${i + 1}]\n` + t);
+      }
+      removeStoragePaths(pages).catch(()=>{});
+      const text = out.join("").trim();
+      if (text) await setJob(jobId, { status: "done", progress: "Done.", result: { text } });
+      else await setJob(jobId, { status: "error", error: "No readable content found in this book." });
+      return { statusCode: 200, body: "ok" };
+    }
 
     const notes = [];
     const pages = Array.isArray(job.pages) ? job.pages : [];

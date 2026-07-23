@@ -124,12 +124,16 @@ voice (tone, named traits, sound like and never sound like, and per-context exam
 lines and naming conventions, the logo system (marks, clear space, misuse rules), illustration,
 photography direction with the full shoot spec, and signage. The crew reads all of it on every job.
 
-## Brand book: accurate full read, no timeouts
-Read and draft DNA reads the ENTIRE brand book with the accurate model (claude-opus-4-8) in a
-background function (up to 15 minutes, so there is no 10 second timeout), then fills each DNA section
-in a separate pass so no answer is ever truncated. Progress shows live and you can keep working.
-Review the draft and press Save. Requires SUPABASE_SERVICE_KEY, SUPABASE_URL and ANTHROPIC_API_KEY in
-Netlify (the same ones used for push and AI).
+## Brand documents are the source of truth
+In Brand DNA, upload everything the studio should know by heart: the brand book, the menu book, a
+signage spec, anything. PDF and HTML are both accepted and you can select several at once. Each
+document is absorbed word for word, nothing is rewritten or summarized, and you never retype it into
+the fields. On every job the crew reads all of them first, each one labelled by filename, and if
+anything in the summary cards disagrees with a document, the document wins. HTML and text based PDFs
+are read instantly in the browser. A scanned book or an image is transcribed page by page by the
+accurate model in a background function (up to 15 minutes, no timeout), with short bracketed notes
+for logos and other visual elements. Each row shows how much was absorbed, with View, Re-absorb and
+Forget. An older single brand book upload migrates into this list automatically.
 
 
 ## Library keeps your original files

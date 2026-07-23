@@ -10,6 +10,7 @@ create table if not exists brandbook_jobs (
   status      text not null default 'pending',  -- pending | running | done | error
   progress    text not null default '',
   kind        text,                             -- pdf | html | image
+  mode        text not null default 'structure', -- transcribe (verbatim) | structure (fill fields)
   pages       jsonb not null default '[]'::jsonb, -- public image URLs (pdf/image)
   book_text   text not null default '',         -- extracted text layer (pdf/html)
   result      jsonb,                            -- final DNA doc
@@ -17,6 +18,7 @@ create table if not exists brandbook_jobs (
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+alter table brandbook_jobs add column if not exists mode text not null default 'structure';
 create index if not exists brandbook_jobs_recent on brandbook_jobs (created_at desc);
 
 alter table brandbook_jobs enable row level security;

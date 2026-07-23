@@ -72,6 +72,16 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .rail-top img{width:38px;height:38px;object-fit:contain;}
 .rail-top .rt-name{font-size:16px;font-weight:600;line-height:1;}
 .rail-top .rt-sub{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-deep);font-weight:700;margin-top:3px;}
+.docrow{display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:center;background:var(--paper);padding:11px 14px;}
+.doc-i{font-family:'Fraunces',serif;font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted2);
+  border:1px solid var(--line2);border-radius:7px;padding:6px 0;text-align:center;}
+.doc-n{font-weight:600;font-size:13px;line-height:1.35;word-break:break-word;}
+.doc-s{font-size:11.5px;color:var(--muted);margin-top:2px;}
+.doc-a{display:flex;gap:11px;align-items:center;}
+@media(max-width:620px){.docrow{grid-template-columns:40px 1fr;}.doc-a{grid-column:1/-1;}}
+.absorbed{display:flex;align-items:center;gap:8px;background:#f2f7f2;border:1px solid #d8e6d8;border-radius:9px;
+  padding:9px 12px;margin-bottom:10px;font-size:12.5px;color:#2f5d3a;line-height:1.45;}
+.ab-dot{width:8px;height:8px;border-radius:50%;background:#3f8b52;flex-shrink:0;}
 .sizes{display:flex;gap:9px;flex-wrap:wrap;}
 .sizebtn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 14px;border-radius:11px;
   border:1px solid var(--line2);background:#fff;font-family:inherit;transition:all .12s;min-width:104px;}
@@ -579,6 +589,37 @@ function isEmptyVal(v){
   if (typeof v === "object") return Object.keys(v).length === 0;
   return false;
 }
+// The studio remembers a list of reference documents. Older saves that had a single
+// brand book are migrated into that list automatically, so nothing is lost.
+function normalizeDNA(dna){
+  const d = { ...(dna || {}) };
+  if (!Array.isArray(d.books)) d.books = [];
+  if (d.brandbook && d.brandbook.url && !d.books.some(b => b.url === d.brandbook.url)) {
+    d.books.unshift({
+      id: "legacy-" + (d.brandbook.name || "brandbook"),
+      name: d.brandbook.name || "Brand book",
+      url: d.brandbook.url,
+      text: d.book_text || "",
+      chars: (d.book_text || "").length,
+      absorbed_at: d.brandbook.absorbed_at || null
+    });
+  }
+  return d;
+}
+function docsText(dna, cap){
+  const books = (dna && dna.books) || [];
+  const limit = cap || 120000;
+  let out = "", used = 0;
+  for (const b of books) {
+    if (!b || !b.text) continue;
+    const head = `\n\n----- ${b.name || "Document"} -----\n`;
+    const room = limit - used - head.length;
+    if (room <= 0) break;
+    const body = b.text.length > room ? b.text.slice(0, room) : b.text;
+    out += head + body; used += head.length + body.length;
+  }
+  return out.trim();
+}
 function mergeDNA(base, over){
   if (!over || typeof over !== "object") return base;
   const out = Array.isArray(base) ? [...base] : { ...(base || {}) };
@@ -622,6 +663,17 @@ function buildBrandSystem(dna, learnings) {
 
   L.push(`You are the Brand Director for ${dna.name || "this brand"}. Every idea you produce must sound and look like this brand, in its own voice. The brand's why always leads.`);
   L.push("");
+  const docs = docsText(dna);
+  if (docs) {
+    const names = ((dna.books) || []).filter(b => b && b.text).map(b => b.name).join(", ");
+    L.push(`== OUR OFFICIAL DOCUMENTS (source of truth: ${names}) ==`);
+    L.push("Work directly from these documents. Follow their exact color codes, typefaces, logo rules, official lines, product names, menu wording, imagery direction and tone.");
+    L.push("If anything below this section ever disagrees with them, the documents win. Never invent a rule or a product the documents do not state.");
+    L.push("");
+    L.push(docs);
+    L.push("");
+    L.push("== SUPPORTING NOTES (only where the documents are silent) ==");
+  }
   L.push("== STORY AND POSITIONING ==");
   add("TAGLINE", p.tagline); add("MISSION", p.mission); add("THE ONE FEELING WE SELL", p.feeling);
   add("FOUNDER MEMORY / WHY", p.why); add("FOUNDER WORDS", p.founder_words);
@@ -968,88 +1020,48 @@ function Auth({ onIn }) {
 }
 
 /* ========================================================= BRAND DNA == */
-function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
+function BrandDNA({ dna, setDna, saveDna, setLogo, absorbBook, addDoc, reAbsorbDoc, removeDoc, brand }) {
   const [edit, setEdit] = useState(false);
   const [draft, setDraft] = useState(dna);
   const [busy, setBusy] = useState(false);
   const [logoBusy, setLogoBusy] = useState(false);
   const [bookBusy, setBookBusy] = useState(false);
-  const [bookFile, setBookFile] = useState(null);
   const [bookProgress, setBookProgress] = useState("");
   const logoRef = useRef(null);
-  const bookRef = useRef(null);
+  const docRef = useRef(null);
   useEffect(()=>{ setDraft(dna); }, [dna]);
   async function save() { setBusy(true); await saveDna(draft); setBusy(false); setEdit(false); }
   async function onLogo(e){ const f=e.target.files&&e.target.files[0]; if(!f)return; setLogoBusy(true); try{ await setLogo(f); }catch(err){ alert(err.message); } finally{ setLogoBusy(false); if(logoRef.current) logoRef.current.value=""; } }
 
-  async function onBook(e){
-    const f = e.target.files&&e.target.files[0]; if(!f) return;
+  async function onDocs(e){
+    const files = Array.from(e.target.files||[]); if(!files.length) return;
     setBookBusy(true);
-    try { setBookFile(f); await setBook(f); }         // store the file on record
-    catch(err){ alert(err.message); }
-    finally { setBookBusy(false); if(bookRef.current) bookRef.current.value=""; }
-  }
-  async function applyBook(){
-    if(LOCAL){ alert("Connect the app to Supabase to read a brand book."); return; }
-    let srcFile = bookFile;
-    setBookBusy(true); setBookProgress("Preparing the brand book...");
-    try {
-      if(!srcFile && dna.brandbook && dna.brandbook.url){
-        const r = await fetch(dna.brandbook.url); const b = await r.blob();
-        srcFile = new File([b], dna.brandbook.name||"brandbook", { type:b.type });
-      }
-      if(!srcFile){ alert("Upload a brand book first."); setBookBusy(false); setBookProgress(""); return; }
-
-      const jobId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
-      const k = fileKind(srcFile);
-      const up = async(path, blob, ct)=>{ const { error } = await sb.storage.from("library").upload(path, blob, { contentType:ct, upsert:true }); if(error) throw new Error(error.message); return sb.storage.from("library").getPublicUrl(path).data.publicUrl; };
-
-      let pages = [], book_text = "";
-      if(k==="pdf"){
-        const pdf = await openPdf(srcFile); const total = Math.min(pdf.numPages, 60);
-        for(let i=1;i<=total;i++){
-          setBookProgress(`Preparing page ${i} of ${total}...`);
-          const blob = await pdfPageBlob(pdf, i, 1400);
-          pages.push(await up(`${brand}/_bookpages/${jobId}/p${String(i).padStart(3,"0")}.jpg`, blob, "image/jpeg"));
-          book_text += `\n[page ${i}] ` + await pdfPageText(pdf, i);
-        }
-      } else if(k==="html"){
-        book_text = htmlToText(await srcFile.text());
-      } else {
-        setBookProgress("Preparing the image...");
-        const s = await shrinkImage(srcFile, 1600, "image/jpeg", 0.85).catch(()=>({ blob:srcFile }));
-        pages.push(await up(`${brand}/_bookpages/${jobId}/p001.jpg`, s.blob, "image/jpeg"));
-      }
-
-      await sb.from("brandbook_jobs").insert({ id:jobId, brand, status:"pending", kind:k, pages, book_text:book_text.slice(0,120000) });
-      // fire the background reader (returns 202 immediately, then runs up to 15 minutes)
-      await fetch(`${FN}/brandbook-process-background`, { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify({ jobId }) }).catch(()=>{});
-
-      setBookProgress("Reading the brand book...");
-      const startedAt = Date.now();
-      const poll = async()=>{
-        if(Date.now()-startedAt > 15*60*1000){ setBookBusy(false); setBookProgress(""); alert("Reading is taking unusually long. Check back in a moment, the draft may still finish."); return; }
-        let data=null;
-        try { ({ data } = await sb.from("brandbook_jobs").select("status,progress,result,error").eq("id",jobId).maybeSingle()); } catch {}
-        if(data && data.progress) setBookProgress(data.progress);
-        if(data && data.status==="done"){
-          const j = data.result || {};
-          const merged = { ...mergeDNA(draft, j), logo_url: draft.logo_url, brandbook: draft.brandbook };
-          setDraft(merged); setEdit(true); setBookBusy(false); setBookProgress("");
-          alert("Read the whole brand book and drafted your Brand DNA, including a full guidelines reference. Review and Save.");
-        } else if(data && data.status==="error"){
-          setBookBusy(false); setBookProgress("");
-          alert("Reading failed: " + (data.error || "unknown error"));
-        } else {
-          setTimeout(poll, 3000);
-        }
-      };
-      setTimeout(poll, 3000);
-    } catch(err){
-      setBookBusy(false); setBookProgress("");
-      alert(err.message || String(err));
+    let done=0, failed=[];
+    for(const f of files){
+      try {
+        setBookProgress(`${f.name} (${done+1} of ${files.length}): reading...`);
+        const entry = await addDoc(f, (m)=>setBookProgress(`${f.name} (${done+1} of ${files.length}): ${m}`));
+        if(!entry.chars) failed.push(`${f.name} (no readable text found)`);
+        done++;
+      } catch(err){ failed.push(`${f.name} (${err.message||err})`); }
     }
+    setBookBusy(false); setBookProgress(""); if(docRef.current) docRef.current.value="";
+    alert(failed.length ? `Absorbed ${done - failed.length} of ${files.length}. Could not read: ${failed.join(", ")}`
+                        : `Absorbed ${done} document${done>1?"s":""}. The crew now works straight from them.`);
   }
+  async function onReAbsorb(b){
+    setBookBusy(true);
+    try { const t = await reAbsorbDoc(b.id, (m)=>setBookProgress(`${b.name}: ${m}`)); alert(`Re-absorbed ${b.name} (${(t||"").length.toLocaleString()} characters).`); }
+    catch(err){ alert(err.message||String(err)); }
+    finally { setBookBusy(false); setBookProgress(""); }
+  }
+  async function onRemoveDoc(b){
+    if(typeof confirm==="function" && !confirm(`Forget "${b.name}"? The crew will stop using it.`)) return;
+    setBookBusy(true);
+    try { await removeDoc(b.id); } catch(err){ alert(err.message||String(err)); }
+    finally { setBookBusy(false); }
+  }
+
   const d = edit ? draft : dna;
   const ADV = ["philosophy","audience","taglines","tagline_rule","naming","logo","illustration","photography","signage","color_rule","typography","voice","colors"];
   const advOf = (o)=>{ const x={}; ADV.forEach(k=>{ if(o[k]!==undefined) x[k]=o[k]; }); return JSON.stringify(x,null,2); };
@@ -1096,7 +1108,7 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
         </div>
         <div className="spacer"></div>
         {edit
-          ? <div className="row"><button className="btn btn-ghost btn-sm" onClick={restoreBookDefaults} title="Add back anything from the brand book baseline that is missing here. Nothing you wrote is removed.">Fill from brand book</button>
+          ? <div className="row"><button className="btn btn-ghost btn-sm" onClick={restoreBookDefaults} title="Add back anything from the built in baseline that is missing here. Nothing you wrote is removed.">Fill from defaults</button>
               <button className="btn btn-ghost btn-sm" onClick={()=>{setEdit(false);setDraft(dna);}}>Cancel</button>
               <button className="btn btn-gold btn-sm" onClick={save} disabled={busy}>{busy?"Saving":"Save DNA"}</button></div>
           : <button className="btn btn-ghost btn-sm" onClick={()=>setEdit(true)}>Edit</button>}
@@ -1155,26 +1167,39 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
       </div>
 
       <div className="card">
-        <div className="card-h">Brand book</div>
-        <div className="row" style={{alignItems:"center",gap:18}}>
-          <div style={{width:70,height:88,borderRadius:10,border:"1px solid var(--line)",background:"var(--cream)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"'Fraunces',serif",fontSize:20,color:"var(--muted2)",letterSpacing:".08em"}}>
-            {dna.brandbook&&dna.brandbook.url?(/\.html?$/i.test(dna.brandbook.name||"")?"HTML":/\.(png|jpe?g|webp|gif)$/i.test(dna.brandbook.name||"")?"IMG":"PDF"):"..."}
-          </div>
-          <div style={{flex:1}}>
-            {dna.brandbook&&dna.brandbook.name
-              ? <p style={{fontSize:13.5,fontWeight:600,marginBottom:4}}>{dna.brandbook.name}</p>
-              : null}
-            <p className="mut" style={{lineHeight:1.5,marginBottom:10}}>Upload the existing brand book (PDF, image or HTML). Keep it on record, and let Claude read it to draft this brand's DNA for you to review.</p>
-            <div className="row">
-              <button className="btn btn-ghost btn-sm" onClick={()=>bookRef.current&&bookRef.current.click()} disabled={bookBusy}>{bookBusy?<span className="spin"></span>:null}{bookBusy?"Working":(dna.brandbook&&dna.brandbook.url?"Replace brand book":"Upload brand book")}</button>
-              {(bookFile||(dna.brandbook&&dna.brandbook.url))&&<button className="btn btn-gold btn-sm" onClick={applyBook} disabled={bookBusy}>Read and draft DNA</button>}
-              {dna.brandbook&&dna.brandbook.url&&<a className="btn btn-ghost btn-sm" href={dna.brandbook.url} target="_blank" rel="noreferrer">View</a>}
-            </div>
-            {bookBusy&&bookProgress&&<div className="mut" style={{marginTop:9,fontSize:12}}><span className="spin"></span>{bookProgress}</div>}
-            {!bookBusy&&<div className="mut" style={{marginTop:8,fontSize:11}}>Reads the entire book with the accurate model in the background. A long book can take a few minutes, you can keep working and it will finish.</div>}
-            <input ref={bookRef} type="file" accept="application/pdf,.pdf,image/*,text/html,.html,.htm" className="hidden" onChange={onBook} />
-          </div>
-        </div>
+        <div className="card-h">Brand documents</div>
+        <p className="mut" style={{lineHeight:1.5,marginBottom:12}}>Upload the brand book, the menu book, or anything else the studio should know by heart. PDF or HTML. Each one is absorbed word for word and read on every job, so you never have to retype it here.</p>
+
+        {(dna.books||[]).filter(b=>b&&b.text).length>0&&
+          <div className="absorbed">
+            <span className="ab-dot"></span>
+            <span>Memorized and in use. {(dna.books||[]).filter(b=>b&&b.text).length} document{(dna.books||[]).filter(b=>b&&b.text).length>1?"s":""}, {(dna.books||[]).reduce((n,b)=>n+((b&&b.chars)||0),0).toLocaleString()} characters read on every job.</span>
+          </div>}
+
+        {(dna.books||[]).length>0&&
+          <div className="specgrid" style={{marginBottom:12}}>
+            {(dna.books||[]).map(b=>(
+              <div className="docrow" key={b.id}>
+                <div className="doc-i">{(b.kind==="html")?"HTML":(b.kind==="pdf")?"PDF":"IMG"}</div>
+                <div className="doc-m">
+                  <div className="doc-n">{b.name}</div>
+                  <div className="doc-s">{b.chars?`${b.chars.toLocaleString()} characters absorbed`:"No readable text found"}</div>
+                </div>
+                <div className="doc-a">
+                  {b.url&&<a className="tile-link" href={b.url} target="_blank" rel="noreferrer">View</a>}
+                  <button className="tile-link" onClick={()=>onReAbsorb(b)} disabled={bookBusy}>Re-absorb</button>
+                  <button className="tile-link del" onClick={()=>onRemoveDoc(b)} disabled={bookBusy}>Forget</button>
+                </div>
+              </div>
+            ))}
+          </div>}
+
+        <button className="btn btn-gold btn-sm" onClick={()=>docRef.current&&docRef.current.click()} disabled={bookBusy}>
+          {bookBusy?<span className="spin"></span>:null}{bookBusy?"Reading":"Upload documents"}
+        </button>
+        <input ref={docRef} type="file" accept="application/pdf,.pdf,text/html,.html,.htm,image/*" multiple className="hidden" onChange={onDocs} />
+        {bookBusy&&bookProgress&&<div className="mut" style={{marginTop:9,fontSize:12}}><span className="spin"></span>{bookProgress}</div>}
+        {!bookBusy&&<div className="mut" style={{marginTop:8,fontSize:11}}>These documents are the source of truth. Where they say something, they win over the summary cards below.</div>}
       </div>
 
       <div className="card">
@@ -1838,7 +1863,7 @@ function App() {
 
   async function loadAll(b){
     const { data:d } = await sb.from("brand_dna").select("doc").eq("brand",b).maybeSingle();
-    setDna(mergeDNA(defaultDNA(b), (d && d.doc) || {}));
+    setDna(normalizeDNA(mergeDNA(defaultDNA(b), (d && d.doc) || {})));
     const { data:li } = await sb.from("library_items").select("*").eq("brand",b).order("created_at",{ascending:false});
     setItems(li||[]);
     const { data:cr } = await sb.from("creations").select("*").eq("brand",b).order("created_at",{ascending:false}).limit(24);
@@ -1865,15 +1890,104 @@ function App() {
     await saveDna(next);
   }
 
-  async function setBook(file){
-    if(LOCAL){ setDna(d=>({...d, brandbook:{ url:URL.createObjectURL(file), name:file.name }})); return; }
+  // Add one reference document: store the file, absorb it word for word, remember it.
+  async function addDoc(file, onProgress){
+    const text = await absorbBook(file, onProgress);
+    const entry = { id:`${Date.now()}-${Math.random().toString(36).slice(2)}`, name:file.name, kind:fileKind(file),
+      text: text||"", chars:(text||"").length, absorbed_at:new Date().toISOString(), url:"" };
+    if(LOCAL){
+      entry.url = URL.createObjectURL(file);
+      setDna(d=>({ ...d, books:[ ...((d.books)||[]), entry ] }));
+      return entry;
+    }
     const safe = file.name.replace(/[^\w.\-]/g,"_");
-    const path = `${brand}/brandbook-${Date.now()}-${safe}`;
+    const path = `${brand}/docs/${Date.now()}-${safe}`;
     const { error } = await sb.storage.from("library").upload(path, file, { contentType:file.type||"application/octet-stream", upsert:true });
-    if(error){ alert("Brand book upload failed: "+error.message); return; }
-    const { data:pu } = sb.storage.from("library").getPublicUrl(path);
-    const next = {...dna, brandbook:{ url:pu.publicUrl, name:file.name }};
+    if(error) throw new Error("Upload failed: "+error.message);
+    entry.url = sb.storage.from("library").getPublicUrl(path).data.publicUrl;
+    const next = { ...dna, books:[ ...((dna.books)||[]), entry ] };
     await saveDna(next);
+    return entry;
+  }
+
+  async function reAbsorbDoc(id, onProgress){
+    const cur = ((dna.books)||[]).find(b=>b.id===id);
+    if(!cur || !cur.url) throw new Error("That document is not on file.");
+    const r = await fetch(cur.url); const b = await r.blob();
+    const f = new File([b], cur.name||"document", { type:b.type });
+    const text = await absorbBook(f, onProgress);
+    const next = { ...dna, books:((dna.books)||[]).map(x=>x.id===id?{ ...x, text:text||"", chars:(text||"").length, absorbed_at:new Date().toISOString() }:x) };
+    await saveDna(next);
+    return text;
+  }
+
+  async function removeDoc(id){
+    const cur = ((dna.books)||[]).find(b=>b.id===id);
+    const next = { ...dna, books:((dna.books)||[]).filter(x=>x.id!==id) };
+    if(cur && cur.url === (dna.brandbook&&dna.brandbook.url)){ next.brandbook = null; next.book_text = ""; }
+    await saveDna(next);
+    if(!LOCAL && cur && cur.url){
+      const m=/\/object\/public\/library\/(.+)$/.exec(cur.url);
+      if(m){ try { await sb.storage.from("library").remove([decodeURIComponent(m[1])]); } catch {} }
+    }
+  }
+
+// Absorb a brand book verbatim so the crew can work straight from it.
+  async function absorbBook(file, onProgress){
+    const k = fileKind(file);
+    const report = (m)=>{ if(onProgress) onProgress(m); };
+    if(k==="html"){
+      report("Reading the brand book...");
+      return htmlToText(await file.text());
+    }
+    if(k==="pdf"){
+      report("Reading the brand book...");
+      const pdf = await openPdf(file);
+      const total = pdf.numPages;
+      let out = "";
+      for(let i=1;i<=total;i++){
+        report(`Reading page ${i} of ${total}...`);
+        out += `\n\n[page ${i}]\n` + await pdfPageText(pdf, i);
+      }
+      // a scanned book has no usable text layer, fall back to reading the pages as images
+      const avg = out.length / Math.max(total,1);
+      if(avg >= 80) return out.trim();
+      report("This book is scanned, reading the pages...");
+      return await transcribeInBackground(file, "pdf", onProgress);
+    }
+    return await transcribeInBackground(file, "image", onProgress);
+  }
+
+  // Pages that have no text layer are transcribed by the background reader (accurate model, no timeout).
+  async function transcribeInBackground(file, kind, onProgress){
+    const jobId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const up = async(path, blob, ct)=>{ const { error } = await sb.storage.from("library").upload(path, blob, { contentType:ct, upsert:true }); if(error) throw new Error(error.message); return sb.storage.from("library").getPublicUrl(path).data.publicUrl; };
+    const pages = [];
+    if(kind==="pdf"){
+      const pdf = await openPdf(file); const total = Math.min(pdf.numPages, 60);
+      for(let i=1;i<=total;i++){
+        if(onProgress) onProgress(`Preparing page ${i} of ${total}...`);
+        pages.push(await up(`${brand}/_bookpages/${jobId}/p${String(i).padStart(3,"0")}.jpg`, await pdfPageBlob(pdf, i, 1400), "image/jpeg"));
+      }
+    } else {
+      const sh = await shrinkImage(file, 1600, "image/jpeg", 0.85).catch(()=>({ blob:file }));
+      pages.push(await up(`${brand}/_bookpages/${jobId}/p001.jpg`, sh.blob, "image/jpeg"));
+    }
+    await sb.from("brandbook_jobs").insert({ id:jobId, brand, status:"pending", kind, mode:"transcribe", pages, book_text:"" });
+    await fetch(`${FN}/brandbook-process-background`, { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify({ jobId, mode:"transcribe" }) }).catch(()=>{});
+    const startedAt = Date.now();
+    return await new Promise((resolve, reject)=>{
+      const poll = async()=>{
+        if(Date.now()-startedAt > 15*60*1000) return reject(new Error("Reading is taking unusually long. Check back in a moment."));
+        let data=null;
+        try { ({ data } = await sb.from("brandbook_jobs").select("status,progress,result,error").eq("id",jobId).maybeSingle()); } catch {}
+        if(data && data.progress && onProgress) onProgress(data.progress);
+        if(data && data.status==="done") return resolve((data.result && data.result.text) || "");
+        if(data && data.status==="error") return reject(new Error(data.error||"Reading failed"));
+        setTimeout(poll, 3000);
+      };
+      setTimeout(poll, 3000);
+    });
   }
 
   /* ---- library ---- */
@@ -2150,7 +2264,7 @@ function App() {
           <span className="ctx-tag">{dna.philosophy&&dna.philosophy.tagline}</span>
           <div className="ctx-dots">{dots.map((c,i)=><span key={i} style={{background:c.hex}} title={c.name}></span>)}</div>
         </div>
-        {nav==="dna"     && <BrandDNA dna={dna} setDna={setDna} saveDna={saveDna} setLogo={setLogo} setBook={setBook} brand={brand} />}
+        {nav==="dna"     && <BrandDNA dna={dna} setDna={setDna} saveDna={saveDna} setLogo={setLogo} absorbBook={absorbBook} addDoc={addDoc} reAbsorbDoc={reAbsorbDoc} removeDoc={removeDoc} brand={brand} />}
         {nav==="library" && <Library items={items} addItems={addItems} analyze={analyze} setItemKind={setItemKind} deleteItem={deleteItem} dna={dna} />}
         {nav==="studio"  && <Studio dna={dna} learnings={learnings} learn={learn} saveCreation={saveCreation} addToLibrary={addToLibrary} creations={creations} />}
         {nav==="learnings" && <Learnings learnings={learnings} addLearning={addLearning} toggleLearning={toggleLearning} removeLearning={removeLearning} />}
