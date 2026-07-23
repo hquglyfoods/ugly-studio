@@ -46,7 +46,6 @@ BO4lvbB4leneMHIHksK-DrXUt4-b0b6PzEwhbijDAeC30LLvEiLAz5CT49S0boNto0GpcgE6NuyzOcx3
 Redeploy so the functions pick up the keys. Do not ever change the VAPID keys once devices subscribe.
 
 ## The crew
-- Claude = Brand Director. Concept, copy, art direction, studies Library uploads, answers in the Ask the studio chat.
 - GPT Image = Designer. Renders the visual from the direction.
 - Adding Gemini later is one more function plus a toggle. The pattern is in place.
 
@@ -61,7 +60,6 @@ strength chart; mute or delete any of them.
 - Installs to the home screen (Add to Home Screen on iOS, Install on Android/desktop).
 - Inputs are locked to 16px on mobile and the viewport is zoom-locked, so tapping a field never zooms.
 - Boot splash, offline shell cache, safe-area padding, pull-to-refresh, and an error screen that offers a reload.
-- Ask the studio: the floating button opens a chat with the Brand Director on any screen.
 - Notifications: turn on from the rail, send a test to confirm delivery.
 
 
@@ -77,10 +75,6 @@ images (down to 2000px JPEG) and renders a PDF's first page as a thumbnail, so s
 while the original is kept. HTML is analyzed as text. Study any item to have Claude read it.
 Note: very large original PDFs are still stored full size; if needed, raise the per-file limit in
 Supabase (Storage settings).
-
-## Logo
-Upload each brand's wordmark in Brand DNA. It becomes the app logo for that brand. Ugly ships with
-its real wordmark. Umma has a placeholder until you upload the real one.
 
 
 ## Reference images in the Studio
@@ -105,7 +99,6 @@ photo as store design or interior.
 ## Making images in the Studio
 It is a two-step flow. Type your brief, then press Direct it. Claude writes the concept, copy and
 art direction. A Render with GPT button then appears in the direction card. Press it to generate the
-actual image. (The Ask the studio chat is Claude for advice and copy only, it does not render images,
 the Studio tab does.) Image generation needs OPENAI_API_KEY set in Netlify. It uses gpt-image-1 and
 automatically falls back to dall-e-3 if your OpenAI org is not verified, so images still generate.
 
@@ -172,6 +165,13 @@ book reading stay on the most accurate one.
 ## SQL to run
 Run these in the Supabase SQL editor, in order. All are safe to re-run.
 supabase_schema.sql, supabase_learnings.sql, supabase_push.sql, supabase_brandbook.sql, supabase_scale.sql
+
+
+## Logos
+A brand usually has several marks: a wordmark, a plain icon, character art, an avocado oil seal.
+Upload as many as you like in Brand DNA, several at once. Tap a name to rename it so the crew can
+refer to the right one, and pick which mark the app itself shows. The crew is told which marks exist
+by name and is told never to describe one you do not have.
 
 ## Files
 - `index.html` .............. the whole app
