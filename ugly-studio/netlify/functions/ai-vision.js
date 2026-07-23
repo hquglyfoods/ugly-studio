@@ -38,7 +38,7 @@ exports.handler = async (event) => {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: MODEL, max_tokens: 1500, system, messages }),
+      body: JSON.stringify({ model: (typeof body.model === "string" && body.model) || MODEL, max_tokens: 1500, system, messages }),
     });
     const data = await r.json();
     if (!r.ok) return { statusCode: r.status, headers: cors, body: JSON.stringify({ error: data.error?.message || "anthropic error", raw: data }) };

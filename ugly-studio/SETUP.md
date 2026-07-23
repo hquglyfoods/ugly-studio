@@ -158,6 +158,21 @@ thumbs and clear of the home indicator. More holds the account items: install, n
 notification and sign out. On a desktop the left rail stays as it was. The brand toggle sits at the
 top right on every screen, one tap to move between Ugly and Umma.
 
+
+## Running heavier work
+Image rendering runs in a background function and the app polls for the finished image, so a slow
+render can never hit a request limit. Transient overload or rate limiting is retried automatically
+with a backoff. Your documents live in their own table, so one upload writes one row and opening the
+app stays light. The documents card shows how much of your memory budget is in use and marks any file
+that does not fully fit, instead of quietly dropping it. Learnings are capped to the strongest rules
+so they cannot crowd out the documents. A scanned book longer than 40 pages is read in several
+passes. Routine jobs (studying a file, chat) run on a lighter model, while art direction and brand
+book reading stay on the most accurate one.
+
+## SQL to run
+Run these in the Supabase SQL editor, in order. All are safe to re-run.
+supabase_schema.sql, supabase_learnings.sql, supabase_push.sql, supabase_brandbook.sql, supabase_scale.sql
+
 ## Files
 - `index.html` .............. the whole app
 - `netlify/functions/` ...... ai-text, ai-image, ai-vision, push-notify, lib/push (all zero npm deps)

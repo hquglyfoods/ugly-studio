@@ -91,6 +91,9 @@ label.lbl{display:block;font-size:11px;font-weight:700;letter-spacing:.08em;text
 .doc-s{font-size:11.5px;color:var(--muted);margin-top:2px;}
 .doc-a{display:flex;gap:11px;align-items:center;}
 @media(max-width:620px){.docrow{grid-template-columns:1fr;}.doc-a{grid-column:1/-1;}}
+.absorbed.warn{background:#fdf4ec;border-color:#f0d6b8;color:#8a5a20;}
+.absorbed.warn .ab-dot{background:#c9822c;}
+.partial{color:var(--brick);font-weight:600;}
 .absorbed{display:flex;align-items:center;gap:8px;background:#f2f7f2;border:1px solid #d8e6d8;border-radius:9px;
   padding:9px 12px;margin-bottom:10px;font-size:12.5px;color:#2f5d3a;line-height:1.45;}
 .ab-dot{width:8px;height:8px;border-radius:50%;background:#3f8b52;flex-shrink:0;}
@@ -327,7 +330,10 @@ const { useState, useEffect, useRef, useCallback } = React;
 const SUPABASE_URL  = "https://kqnserohxtzpjolgvhrk.supabase.co";
 const SUPABASE_ANON = "sb_publishable_6KTq8xbNOFzj1vSjYn-fWw_3MSqG0Yx";
 const VAPID_PUBLIC  = "BO4lvbB4leneMHIHksK-DrXUt4-b0b6PzEwhbijDAeC30LLvEiLAz5CT49S0boNto0GpcgE6NuyzOcx3RqeGCr8";
-const FAST_MODEL    = "claude-haiku-4-5-20251001";  // fast model for page-by-page brand book reading (stays within function timeout)
+// Model policy: brand book reading and art direction stay on the most accurate model.
+// Routine jobs (studying one library file, chat replies) use a lighter one, which cuts
+// both the wait and the bill without touching the quality of the work that matters.
+const LIGHT_MODEL   = "claude-sonnet-5";
 const FN = "/.netlify/functions";
 const LOCAL = !SUPABASE_URL || SUPABASE_URL.indexOf("__") === 0;
 const sb = LOCAL ? null : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
@@ -382,9 +388,24 @@ function normalizeDNA(dna){
   }
   return d;
 }
+const DOC_CAP = 120000;   // characters of documents the crew carries into every job
+// Work out exactly how much of each document fits, so the app can show it instead of hiding it.
+function docsBudget(books, cap){
+  const limit = cap || DOC_CAP;
+  let used = 0;
+  const rows = (books || []).map(b => {
+    const text = (b && b.text) || "";
+    const head = `\n\n----- ${(b && b.name) || "Document"} -----\n`;
+    const room = Math.max(0, limit - used - head.length);
+    const included = Math.min(text.length, room);
+    used += included ? head.length + included : 0;
+    return { id: b && b.id, name: b && b.name, chars: text.length, included, full: included >= text.length };
+  });
+  return { rows, used, limit, over: rows.some(r => !r.full && r.chars > 0) };
+}
 function docsText(dna, cap){
   const books = (dna && dna.books) || [];
-  const limit = cap || 120000;
+  const limit = cap || DOC_CAP;
   let out = "", used = 0;
   for (const b of books) {
     if (!b || !b.text) continue;
@@ -420,16 +441,24 @@ function mergeDNA(base, over){
 }
 
 function learningsBlock(learnings) {
-  const on = (learnings || []).filter(l => l.active);
-  if (!on.length) return "";
-  const line = (l) => `- ${l.text}${l.weight > 1 ? ` (reinforced ${l.weight}x, treat as a hard rule)` : ""}`;
-  const grp = (k) => on.filter(l => l.kind === k).sort((a, b) => b.weight - a.weight).map(line).join("\n");
-  const dis = grp("dislike"), emp = grp("emphasis"), mis = grp("mistake");
-  const out = ["", "WHAT WE HAVE LEARNED FROM THE TEAM (obey these over your defaults):"];
-  if (dis) out.push("Things we dislike, never produce them:\n" + dis);
-  if (emp) out.push("Things we always emphasize, carry them through:\n" + emp);
-  if (mis) out.push("Mistakes you keep making, do not repeat them:\n" + mis);
-  return out.join("\n");
+  const active = (learnings || []).filter(l => l.active !== false);
+  if (!active.length) return "";
+  // Keep the strongest rules only, so a long history can never push the documents out.
+  const MAX = 40;
+  const ranked = [...active].sort((a, b) => (b.weight || 1) - (a.weight || 1));
+  const use = ranked.slice(0, MAX);
+  const hard = use.filter(l => (l.weight || 1) >= 3);
+  const rest = use.filter(l => (l.weight || 1) < 3);
+  const line = (l) => `- ${l.text}${(l.weight || 1) > 1 ? ` (raised ${l.weight} times)` : ""}`;
+  return [
+    "",
+    "== WHAT WE HAVE LEARNED (from past work, newest thinking wins) ==",
+    hard.length ? "HARD RULES, never break these:" : "",
+    ...hard.map(line),
+    rest.length ? "ALSO KEEP IN MIND:" : "",
+    ...rest.map(line),
+    ranked.length > MAX ? `(${ranked.length - MAX} weaker notes are not shown, the strongest ${MAX} are used.)` : ""
+  ].filter(Boolean).join("\n");
 }
 
 function buildBrandSystem(dna, learnings) {
@@ -498,15 +527,24 @@ const KINDS = ["all","poster","photo","logo","store","interior","menu","packagin
 const KIND_LABEL = { store:"store design", interior:"interior", poster:"poster", photo:"photo", logo:"logo", menu:"menu", packaging:"packaging", signage:"signage", deck:"deck", render:"render", other:"other" };
 
 /* ========================================================= HELPERS ==== */
+const RETRY_STATUS = [429, 500, 502, 503, 504, 529];
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 async function fnCall(name, payload) {
-  let r;
-  try {
-    r = await fetch(`${FN}/${name}`, {
-      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload)
-    });
-  } catch (e) {
-    throw new Error("Could not reach the studio. Check your connection and try again.");
+  let r, lastErr;
+  // A busy model or a blip should retry quietly instead of losing your work.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      r = await fetch(`${FN}/${name}`, {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(payload)
+      });
+      if (RETRY_STATUS.includes(r.status) && attempt < 2) { await sleep(1500 * Math.pow(2, attempt)); continue; }
+      lastErr = null; break;
+    } catch (e) {
+      lastErr = e;
+      if (attempt < 2) { await sleep(1500 * Math.pow(2, attempt)); continue; }
+    }
   }
+  if (lastErr || !r) throw new Error("Could not reach the studio. Check your connection and try again.");
   const raw = await r.text();
   let data = null;
   if (raw) { try { data = JSON.parse(raw); } catch { data = null; } }
@@ -798,6 +836,9 @@ function BrandDNA({ dna, saveDna, setLogo, absorbBook, addDoc, reAbsorbDoc, remo
   const books = (dna.books || []);
   const withText = books.filter(b => b && b.chars);
   const totalChars = books.reduce((n,b)=>n+((b&&b.chars)||0), 0);
+  const dnaRef2 = useRef(dna); useEffect(()=>{ dnaRef2.current = dna; },[dna]);
+  const budget = docsBudget(books);
+  const pct = Math.min(100, Math.round(budget.used / budget.limit * 100));
 
   async function onLogo(e){
     const f = e.target.files && e.target.files[0]; if(!f) return;
@@ -818,8 +859,10 @@ function BrandDNA({ dna, saveDna, setLogo, absorbBook, addDoc, reAbsorbDoc, remo
       } catch(err){ failed.push(`${f.name} (${err.message||err})`); }
     }
     setBusy(false); setProgress(""); if(docRef.current) docRef.current.value="";
-    alert(failed.length ? `Added ${added} of ${files.length}. Could not read: ${failed.join(", ")}`
-                        : `Added ${added} document${added>1?"s":""}. The crew now works straight from ${added>1?"them":"it"}.`);
+    const after = docsBudget((dnaRef2.current&&dnaRef2.current.books)||books);
+    const overNote = after.over ? " Some of it is past what fits in one job, see the note above." : "";
+    alert(failed.length ? `Added ${added} of ${files.length}. Could not read: ${failed.join(", ")}${overNote}`
+                        : `Added ${added} document${added>1?"s":""}. The crew now works straight from ${added>1?"them":"it"}.${overNote}`);
   }
   async function onReAbsorb(b){
     setBusy(true);
@@ -848,9 +891,13 @@ function BrandDNA({ dna, saveDna, setLogo, absorbBook, addDoc, reAbsorbDoc, remo
         <p className="mut" style={{lineHeight:1.5,marginBottom:12}}>Brand book, menu book, signage spec, anything else. PDF or HTML, several at once. Each file is read word for word and used on every job. Tap a file to view it.</p>
 
         {withText.length>0&&
-          <div className="absorbed">
+          <div className={"absorbed"+(budget.over?" warn":"")}>
             <span className="ab-dot"></span>
-            <span>Memorized and in use. {withText.length} file{withText.length>1?"s":""}, {totalChars.toLocaleString()} characters read on every job.</span>
+            <span>
+              {budget.over
+                ? `Over what fits in one job. ${withText.length} files, ${totalChars.toLocaleString()} characters, and ${budget.used.toLocaleString()} of them are used. Remove or shorten a file so nothing is left out.`
+                : `Memorized and in use. ${withText.length} file${withText.length>1?"s":""}, ${totalChars.toLocaleString()} characters read on every job. Using ${pct}% of what fits.`}
+            </span>
           </div>}
 
         {books.length>0&&
@@ -861,7 +908,11 @@ function BrandDNA({ dna, saveDna, setLogo, absorbBook, addDoc, reAbsorbDoc, remo
                   <span className="doc-i">{b.kind==="html"?"HTML":b.kind==="pdf"?"PDF":"IMG"}</span>
                   <span className="doc-m">
                     <span className="doc-n">{b.name}</span>
-                    <span className="doc-s">{b.chars?`${b.chars.toLocaleString()} characters memorized`:"No readable text found"}</span>
+                    <span className="doc-s">
+                      {b.chars ? `${b.chars.toLocaleString()} characters memorized` : "No readable text found"}
+                      {(()=>{ const r=budget.rows.find(x=>x.id===b.id); return r&&b.chars&&!r.full
+                        ? <span className="partial">{r.included ? ` · only ${r.included.toLocaleString()} of these fit` : " · not reaching the crew"}</span> : null; })()}
+                    </span>
                   </span>
                 </button>
                 <div className="doc-a">
@@ -996,7 +1047,7 @@ function Library({ items, addItems, analyze, setItemKind, deleteItem, dna }) {
 }
 
 /* ========================================================= STUDIO ===== */
-function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }) {
+function Studio({ dna, learnings, learn, renderImage, saveCreation, addToLibrary, creations }) {
   const [task, setTask] = useState("poster");
   const [brief, setBrief] = useState("");
   const [dir, setDir] = useState(null);       // director JSON
@@ -1008,6 +1059,7 @@ function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }
   const [learned, setLearned] = useState(""); // toast after learning
   const [fbBusy, setFbBusy] = useState(false);
   const [size, setSize] = useState(TASKS[0].size);
+  const [renderNote, setRenderNote] = useState("");
   const [refs, setRefs] = useState([]);       // reference images the director should consider
   const [refBusy, setRefBusy] = useState(false);
   const refInput = useRef(null);
@@ -1062,14 +1114,13 @@ function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }
   }
 
   async function render() {
-    setErr(""); setPhase("rendering");
+    setErr(""); setPhase("rendering"); setRenderNote("Rendering...");
     try {
-      const { b64 } = await fnCall("ai-image", { prompt, size });
-      const url = `data:image/png;base64,${b64}`;
-      setImg({ b64, url });
-      setPhase("done");
-      await saveCreation({ task_type:task, brief, director_out:JSON.stringify(dir), image_prompt:prompt, b64 });
-    } catch(e){ setErr(e.message); setPhase("directed"); }
+      const url = await renderImage({ prompt, size }, setRenderNote);
+      setImg({ url });
+      setPhase("done"); setRenderNote("");
+      await saveCreation({ task_type:task, brief, director_out:JSON.stringify(dir), image_prompt:prompt, url });
+    } catch(e){ setErr(e.message); setPhase("directed"); setRenderNote(""); }
   }
 
   const directing = phase==="directing", rendering = phase==="rendering";
@@ -1160,6 +1211,7 @@ function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }
           <div className="row" style={{marginTop:14}}>
             <button className="btn btn-gold" onClick={render} disabled={rendering}>
               {rendering?<span className="spin"></span>:null}{rendering?"Rendering":"Render with GPT"}</button>
+            {rendering&&renderNote&&<span className="mut" style={{fontSize:12}}>{renderNote}. This can take a minute, you can keep working.</span>}
           </div>
         </div>}
 
@@ -1167,7 +1219,7 @@ function Studio({ dna, learnings, learn, saveCreation, addToLibrary, creations }
           <img src={img.url} alt="rendered" />
           <div className="row">
             <a className="btn btn-ghost btn-sm" href={img.url} download={`ugly-${task}-${Date.now()}.png`}>Download</a>
-            <button className="btn btn-ghost btn-sm" onClick={()=>addToLibrary({task_type:task,brief,b64:img.b64})}>Save to Library</button>
+            <button className="btn btn-ghost btn-sm" onClick={()=>addToLibrary({task_type:task,brief,url:img.url})}>Save to Library</button>
             <button className="btn btn-ghost btn-sm" onClick={render} disabled={rendering}>Try another render</button>
           </div>
         </div>}
@@ -1301,7 +1353,7 @@ function ChatSheet({ open, onClose, dna, learnings }) {
     setMsgs(next); setQ(""); setBusy(true);
     try{
       const system = buildBrandSystem(dna, learnings) + "\nYou are the studio's on-call brand advisor in a chat. Answer briefly and practically, always in our voice. No em dashes.";
-      const { text:reply } = await fnCall("ai-text",{ system, messages:next.map(m=>({role:m.role,content:m.content})), max_tokens:900 });
+      const { text:reply } = await fnCall("ai-text",{ model:LIGHT_MODEL, system, messages:next.map(m=>({role:m.role,content:m.content})), max_tokens:900 });
       setMsgs(m=>[...m,{role:"assistant",content:reply}]);
     }catch(e){ setMsgs(m=>[...m,{role:"assistant",content:"I could not reach the model just now. "+e.message}]); }
     finally{ setBusy(false); }
@@ -1388,9 +1440,33 @@ function App() {
     setDna(defaultDNA(b)); setItems([]); setCreations([]); setLearnings([]);
   }
 
+  async function loadDocs(b){
+    // Documents are their own rows now: one upload writes one row, and the brand
+    // record stays small no matter how much is memorized.
+    const { data } = await sb.from("brand_docs").select("id,name,kind,url,chars,text,absorbed_at").eq("brand",b).order("created_at",{ascending:true});
+    return (data||[]).map(d=>({ id:d.id, name:d.name, kind:d.kind, url:d.url, chars:d.chars, text:d.text||"", absorbed_at:d.absorbed_at }));
+  }
+
+  // One time move of anything stored the old way, so nothing has to be uploaded again.
+  async function migrateLegacyDocs(b, doc){
+    const legacy = normalizeDNA(doc || {}).books || [];
+    if(!legacy.length) return false;
+    for(const bk of legacy){
+      if(!bk || !(bk.text||"").length) continue;
+      await sb.from("brand_docs").insert({ brand:b, name:bk.name||"Document", kind:bk.kind||"pdf", url:bk.url||null, chars:(bk.text||"").length, text:bk.text||"" });
+    }
+    const cleaned = { ...(doc||{}) }; delete cleaned.books; delete cleaned.book_text; delete cleaned.brandbook;
+    await sb.from("brand_dna").upsert({ brand:b, doc:cleaned, updated_at:new Date().toISOString() }, { onConflict:"brand" });
+    return true;
+  }
+
   async function loadAll(b){
     const { data:d } = await sb.from("brand_dna").select("doc").eq("brand",b).maybeSingle();
-    setDna(normalizeDNA(mergeDNA(defaultDNA(b), (d && d.doc) || {})));
+    const raw = (d && d.doc) || {};
+    if((raw.books && raw.books.length) || raw.book_text) await migrateLegacyDocs(b, raw).catch(()=>{});
+    const base = mergeDNA(defaultDNA(b), { ...raw, books: [] });
+    const docs = await loadDocs(b);
+    setDna({ ...base, books: docs });
     const { data:li } = await sb.from("library_items").select("*").eq("brand",b).order("created_at",{ascending:false});
     setItems(li||[]);
     const { data:cr } = await sb.from("creations").select("*").eq("brand",b).order("created_at",{ascending:false}).limit(24);
@@ -1408,8 +1484,11 @@ function App() {
     dnaRef.current = next;
     setDna(next);
     if(LOCAL) return;
+    next = { ...next }; const books = next.books; delete next.books;   // documents have their own table
+    const restore = (r)=>{ dnaRef.current = { ...r, books }; setDna(dnaRef.current); };
     const { error } = await sb.from("brand_dna").upsert({ brand, doc:next, updated_at:new Date().toISOString() }, { onConflict:"brand" });
     if(error) throw new Error("Could not save: "+error.message);
+    restore(next);
     return next;
   }
 
@@ -1426,21 +1505,28 @@ function App() {
   // Add one reference document: store the file, absorb it word for word, remember it.
   async function addDoc(file, onProgress){
     const text = await absorbBook(file, onProgress);
-    const entry = { id:`${Date.now()}-${Math.random().toString(36).slice(2)}`, name:file.name, kind:fileKind(file),
-      text: text||"", chars:(text||"").length, absorbed_at:new Date().toISOString(), url:"" };
+    const entry = { name:file.name, kind:fileKind(file), text:text||"", chars:(text||"").length, absorbed_at:new Date().toISOString(), url:"" };
     if(LOCAL){
+      entry.id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
       entry.url = URL.createObjectURL(file);
-      setDna(d=>({ ...d, books:[ ...((d.books)||[]), entry ] }));
+      const base = dnaRef.current || {};
+      dnaRef.current = { ...base, books:[ ...((base.books)||[]), entry ] };
+      setDna(dnaRef.current);
       return entry;
     }
     const safe = file.name.replace(/[^\w.\-]/g,"_");
     const path = `${brand}/docs/${Date.now()}-${safe}`;
-    const { error } = await sb.storage.from("library").upload(path, file, { contentType:mimeFor(file), upsert:true });
-    if(error) throw new Error("Upload failed: "+error.message);
+    const { error:ue } = await sb.storage.from("library").upload(path, file, { contentType:mimeFor(file), upsert:true });
+    if(ue) throw new Error("Upload failed: "+ue.message);
     entry.url = sb.storage.from("library").getPublicUrl(path).data.publicUrl;
+    const { data:row, error } = await sb.from("brand_docs")
+      .insert({ brand, name:entry.name, kind:entry.kind, url:entry.url, chars:entry.chars, text:entry.text })
+      .select("id,name,kind,url,chars,text,absorbed_at").single();
+    if(error) throw new Error("Could not save the document: "+error.message);
     const base = dnaRef.current || {};
-    await saveDna({ ...base, books:[ ...((base.books)||[]), entry ] });
-    return entry;
+    dnaRef.current = { ...base, books:[ ...((base.books)||[]), row ] };
+    setDna(dnaRef.current);
+    return row;
   }
 
   async function reAbsorbDoc(id, onProgress){
@@ -1452,18 +1538,24 @@ function App() {
     const f = new File([b], cur.name||"document", { type: b.type || "" });
     const text = await absorbBook(f, onProgress);
     if(!text || !text.trim()) throw new Error(`No readable text found in ${cur.name}`);
+    if(!LOCAL){
+      const { error } = await sb.from("brand_docs").update({ text, chars:text.length, absorbed_at:new Date().toISOString() }).eq("id", id);
+      if(error) throw new Error("Could not save: "+error.message);
+    }
     const base = dnaRef.current || {};
-    await saveDna({ ...base, books:((base.books)||[]).map(x=>x.id===id?{ ...x, text, chars:text.length, absorbed_at:new Date().toISOString() }:x) });
+    dnaRef.current = { ...base, books:((base.books)||[]).map(x=>x.id===id?{ ...x, text, chars:text.length, absorbed_at:new Date().toISOString() }:x) };
+    setDna(dnaRef.current);
     return text;
   }
 
   async function removeDoc(id){
     const base = dnaRef.current || {};
     const cur = ((base.books)||[]).find(b=>b.id===id);
-    const next = { ...base, books:((base.books)||[]).filter(x=>x.id!==id) };
-    if(cur && cur.url === (base.brandbook&&base.brandbook.url)){ next.brandbook = null; next.book_text = ""; }
-    await saveDna(next);
-    if(!LOCAL && cur && cur.url){
+    dnaRef.current = { ...base, books:((base.books)||[]).filter(x=>x.id!==id) };
+    setDna(dnaRef.current);
+    if(LOCAL) return;
+    await sb.from("brand_docs").delete().eq("id", id);
+    if(cur && cur.url){
       const m=/\/object\/public\/library\/(.+)$/.exec(cur.url);
       if(m){ try { await sb.storage.from("library").remove([decodeURIComponent(m[1])]); } catch {} }
     }
@@ -1514,6 +1606,23 @@ function App() {
       const sh = await shrinkImage(file, 1600, "image/jpeg", 0.85).catch(()=>({ blob:file }));
       pages.push(await up(`${brand}/_bookpages/${jobId}/p001.jpg`, sh.blob, "image/jpeg"));
     }
+    // Each background job has a time budget, so a very long scan is read in several passes.
+    const PER_JOB = 40;
+    if(pages.length > PER_JOB){
+      let all = "";
+      for(let s0=0; s0<pages.length; s0+=PER_JOB){
+        const slice = pages.slice(s0, s0+PER_JOB);
+        const part = Math.floor(s0/PER_JOB)+1, parts = Math.ceil(pages.length/PER_JOB);
+        if(onProgress) onProgress(`Reading part ${part} of ${parts}...`);
+        all += (all?"\n\n":"") + await runTranscribeJob(slice, kind, (m)=>onProgress&&onProgress(`Part ${part} of ${parts}: ${m}`), s0);
+      }
+      return all;
+    }
+    return await runTranscribeJob(pages, kind, onProgress, 0);
+  }
+
+  async function runTranscribeJob(pages, kind, onProgress, offset){
+    const jobId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
     await sb.from("brandbook_jobs").insert({ id:jobId, brand, status:"pending", kind, mode:"transcribe", pages, book_text:"" });
     await fetch(`${FN}/brandbook-process-background`, { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify({ jobId, mode:"transcribe" }) }).catch(()=>{});
     const startedAt = Date.now();
@@ -1607,7 +1716,7 @@ function App() {
           const res = await fetch(imgUrl); const blob = await res.blob(); media_type = blob.type||"image/jpeg";
           b64 = await new Promise((r,j)=>{const fr=new FileReader();fr.onload=()=>r(String(fr.result).split(",")[1]);fr.onerror=()=>j(new Error("read"));fr.readAsDataURL(blob);});
         }
-        ({ text } = await fnCall("ai-vision", { system, b64, media_type, ask:`Analyze this ${dna.name||"brand"} material.` }));
+        ({ text } = await fnCall("ai-vision", { model:LIGHT_MODEL, system, b64, media_type, ask:`Analyze this ${dna.name||"brand"} material.` }));
       }
       setItems(p=>p.map(x=>x.id===it.id?{...x,ai_analysis:text,_analyzing:false}:x));
       if(!LOCAL) await sb.from("library_items").update({ ai_analysis:text }).eq("id",it.id);
@@ -1630,29 +1739,45 @@ function App() {
   }
 
   /* ---- studio ---- */
-  async function saveCreation({ task_type, brief, director_out, image_prompt, b64 }){
+  // Image models take far longer than a request is allowed to run, so rendering
+  // happens in a background function and the app polls for the finished image.
+  async function renderImage({ prompt, size }, onProgress){
+    if(LOCAL) throw new Error("Connect the app to Supabase to render images.");
+    const jobId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const { error } = await sb.from("studio_jobs").insert({ id:jobId, brand, kind:"image", status:"pending", prompt, size });
+    if(error) throw new Error("Could not start the render: "+error.message);
+    await fetch(`${FN}/image-render-background`, { method:"POST", headers:{ "content-type":"application/json" }, body:JSON.stringify({ jobId }) }).catch(()=>{});
+    const startedAt = Date.now();
+    return await new Promise((resolve, reject)=>{
+      const poll = async()=>{
+        if(Date.now()-startedAt > 10*60*1000) return reject(new Error("The render is taking unusually long. Check back in a moment."));
+        let data=null;
+        try { ({ data } = await sb.from("studio_jobs").select("status,progress,result,error").eq("id",jobId).maybeSingle()); } catch {}
+        if(data && data.progress && onProgress) onProgress(data.progress);
+        if(data && data.status==="done" && data.result && data.result.url) return resolve(data.result.url);
+        if(data && data.status==="error") return reject(new Error(data.error||"Rendering failed"));
+        setTimeout(poll, 2500);
+      };
+      setTimeout(poll, 2500);
+    });
+  }
+
+  async function saveCreation({ task_type, brief, director_out, image_prompt, url }){
     if(LOCAL){
-      const url = `data:image/png;base64,${b64}`;
       setCreations(p=>[{ id:"c"+Math.random().toString(36).slice(2), task_type, brief, image_url:url, image_prompt },...p]);
       return;
     }
-    const path = `${brand}/${Date.now()}-${task_type}.png`;
-    await sb.storage.from("creations").upload(path, b64ToBlob(b64), { contentType:"image/png" });
-    const { data:pu } = sb.storage.from("creations").getPublicUrl(path);
-    const { data:row } = await sb.from("creations").insert({ brand, task_type, brief, director_out, image_prompt, image_url:pu.publicUrl, status:"done" }).select().single();
+    // the background renderer already stored the image, so this only records the work
+    const { data:row } = await sb.from("creations").insert({ brand, task_type, brief, director_out, image_prompt, image_url:url, status:"done" }).select().single();
     if(row) setCreations(p=>[row,...p]);
   }
 
-  async function addToLibrary({ task_type, brief, b64 }){
+  async function addToLibrary({ task_type, brief, url }){
     if(LOCAL){
-      const url = `data:image/png;base64,${b64}`;
       setItems(p=>[{ id:"l"+Math.random().toString(36).slice(2), title:brief.slice(0,40)||task_type, kind:"render", tags:[task_type], file_url:url, thumb_url:url, ai_analysis:"" },...p]);
       alert("Saved to Library."); return;
     }
-    const path = `${brand}/${Date.now()}-lib-${task_type}.png`;
-    await sb.storage.from("library").upload(path, b64ToBlob(b64), { contentType:"image/png" });
-    const { data:pu } = sb.storage.from("library").getPublicUrl(path);
-    const { data:row } = await sb.from("library_items").insert({ brand, title:brief.slice(0,60)||task_type, kind:"render", tags:[task_type], file_url:pu.publicUrl, thumb_url:pu.publicUrl, source:"studio" }).select().single();
+    const { data:row } = await sb.from("library_items").insert({ brand, title:brief.slice(0,60)||task_type, kind:"render", tags:[task_type], file_url:url, thumb_url:url, source:"studio" }).select().single();
     if(row){ setItems(p=>[row,...p]); alert("Saved to Library."); }
   }
 
@@ -1698,7 +1823,7 @@ function App() {
       `Their note: "${note}"\n\n`+
       `Return JSON: {"lessons":[{"kind":"dislike|emphasis|mistake","text":"..."}]}. `+
       `Only include genuinely new or clearly different lessons. If nothing new, return {"lessons":[]}.`;
-    const { text } = await fnCall("ai-text",{ system:sys, messages:[{role:"user",content:ask}], max_tokens:600 });
+    const { text } = await fnCall("ai-text",{ model:LIGHT_MODEL, system:sys, messages:[{role:"user",content:ask}], max_tokens:600 });
     const j = stripJSON(text);
     const lessons = (j&&Array.isArray(j.lessons))?j.lessons:[];
     let added=0, bumped=0;
@@ -1805,7 +1930,7 @@ function App() {
         </div>
         {nav==="dna"     && <BrandDNA dna={dna} saveDna={saveDna} setLogo={setLogo} absorbBook={absorbBook} addDoc={addDoc} reAbsorbDoc={reAbsorbDoc} removeDoc={removeDoc} brand={brand} />}
         {nav==="library" && <Library items={items} addItems={addItems} analyze={analyze} setItemKind={setItemKind} deleteItem={deleteItem} dna={dna} />}
-        {nav==="studio"  && <Studio dna={dna} learnings={learnings} learn={learn} saveCreation={saveCreation} addToLibrary={addToLibrary} creations={creations} />}
+        {nav==="studio"  && <Studio dna={dna} learnings={learnings} learn={learn} renderImage={renderImage} saveCreation={saveCreation} addToLibrary={addToLibrary} creations={creations} />}
         {nav==="learnings" && <Learnings learnings={learnings} addLearning={addLearning} toggleLearning={toggleLearning} removeLearning={removeLearning} />}
       </div>
 

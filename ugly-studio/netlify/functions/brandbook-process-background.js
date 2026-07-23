@@ -32,12 +32,27 @@ function repairJSON(t){
   try { return JSON.parse(fix); } catch { return null; }
 }
 
+const RETRY_STATUS = [429, 500, 502, 503, 504, 529];
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+// Transient overload should never surface as a failed job.
+async function withRetry(fn, { tries = 4, base = 1500, label = "request" } = {}) {
+  let last;
+  for (let i = 0; i < tries; i++) {
+    try {
+      const r = await fn();
+      if (r && r.status && RETRY_STATUS.includes(r.status) && i < tries - 1) { await sleep(base * Math.pow(2, i)); continue; }
+      return r;
+    } catch (e) { last = e; if (i === tries - 1) break; await sleep(base * Math.pow(2, i)); }
+  }
+  throw last || new Error(`${label} failed`);
+}
+
 async function sbREST(path, opts = {}) {
   const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
-  const r = await fetch(`${url}/rest/v1/${path}`, {
+  const r = await withRetry(() => fetch(`${url}/rest/v1/${path}`, {
     ...opts,
     headers: { apikey: key, authorization: `Bearer ${key}`, "content-type": "application/json", ...(opts.headers || {}) },
-  });
+  }), { label: "supabase" });
   const text = await r.text();
   if (!text) return null;
   try { return JSON.parse(text); } catch { return null; }
@@ -47,11 +62,11 @@ async function setJob(id, fields) {
   await sbREST(`brandbook_jobs?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify(fields) });
 }
 async function anthropic(system, content, max_tokens) {
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
+  const r = await withRetry(() => fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "content-type": "application/json", "x-api-key": process.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
     body: JSON.stringify({ model: MODEL, max_tokens, system, messages: [{ role: "user", content }] }),
-  });
+  }), { label: "anthropic" });
   const raw = await r.text();
   let data = null; try { data = raw ? JSON.parse(raw) : null; } catch {}
   if (!r.ok || !data) throw new Error((data && data.error && data.error.message) || `anthropic error (${r.status})` + (raw ? `: ${raw.slice(0, 120)}` : ""));
