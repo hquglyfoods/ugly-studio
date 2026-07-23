@@ -427,16 +427,23 @@ const DEFAULT_DNA = {
     { pattern: "Drinks", rule: "Evocative two-word names, a mood, not a description.", examples: "Midnight Lemonade, Dragon Passion, Sunset Peach, Taro Cloud" },
     { pattern: "Quality anchor", rule: "Drink descriptions lead with \"premium real fruit syrup\" as the consistency signal.", examples: "Used across Refreshers, Boba, Coco Sips" }
   ],
+  audience: {
+    target: "",
+    market_position: "",
+    edge: "",
+    not_for: ""
+  },
   logo: {
     marks: [
-      { name: "Horizontal wordmark", use: "Primary. Wide contexts: headers, banners, storefront signage." },
-      { name: "Stacked wordmark", use: "Square formats: cups, social profile, packaging panels." },
-      { name: "White / reversed wordmark", use: "On dark navy or dark photo backgrounds." },
-      { name: "\"ugly\" script mark", use: "Standalone handwritten script. Casual contexts, social overlays, merch." },
-      { name: "Circle badge, dark", use: "Corn dog and donut icon inside a circle, EST. 2021 at the base. On dark backgrounds." },
-      { name: "Circle badge, light", use: "Color illustration version on light or cream backgrounds. Golden tan food illustration." },
-      { name: "Avocado oil seal, light", use: "\"We Fry In 100% Avocado Oil\", olive green on cream. Packaging and marketing." },
-      { name: "Avocado oil seal, dark", use: "Cream or warm grey on dark. Dark mode packaging and digital contexts." }
+      { name: "Horizontal wordmark (color)", use: "Primary. Wide contexts: headers, banners, storefront signage.", file: "SVG, PNG" },
+      { name: "Horizontal wordmark (white)", use: "Dark backgrounds, navy base.", file: "SVG, PNG" },
+      { name: "Stacked wordmark (color + white)", use: "Square formats: cups, social profile, packaging panels.", file: "SVG, PNG" },
+      { name: "\"ugly\" script mark", use: "Standalone handwritten script. Casual contexts, social overlays, merch.", file: "SVG, PNG transparent" },
+      { name: "Circle badge, dark", use: "Corn dog and donut icon inside a circle, EST. 2021 at the base. On dark backgrounds.", file: "SVG, EPS" },
+      { name: "Circle badge, light", use: "Color illustration version on light or cream backgrounds. Golden tan food illustration.", file: "SVG, EPS" },
+      { name: "Avocado oil seal, light", use: "\"We Fry In 100% Avocado Oil\", olive green on cream. Packaging and marketing.", file: "SVG, PNG" },
+      { name: "Avocado oil seal, dark", use: "Cream or warm grey on dark. Dark mode packaging and digital contexts.", file: "SVG, PNG" },
+      { name: "Favicon / app icon", use: "The ampersand mark or circle badge, square.", file: "PNG 512px, ICO" }
     ],
     clear_space: "Always maintain minimum clear space equal to the cap height of the U in UGLY on all four sides.",
     never: [
@@ -552,6 +559,7 @@ const DEFAULT_DNA_UMMA = {
   ],
   tagline_rule: "",
   naming: [],
+  audience: { target: "", market_position: "", edge: "", not_for: "" },
   logo: { marks: [], clear_space: "", never: [] },
   illustration: { style: "", items: [] },
   photography: { principles: [], brief: "", spec: {}, note: "" },
@@ -560,6 +568,39 @@ const DEFAULT_DNA_UMMA = {
   guidelines: ""
 };
 function defaultDNA(brand){ return brand === "umma" ? DEFAULT_DNA_UMMA : DEFAULT_DNA; }
+
+// Merge a saved or freshly extracted DNA over the brand's baseline.
+// Anything the incoming doc actually says wins. Anything it leaves empty or missing
+// keeps what we already had, so an older or partial document never blanks a section.
+function isEmptyVal(v){
+  if (v === undefined || v === null) return true;
+  if (typeof v === "string") return v.trim() === "";
+  if (Array.isArray(v)) return v.length === 0;
+  if (typeof v === "object") return Object.keys(v).length === 0;
+  return false;
+}
+function mergeDNA(base, over){
+  if (!over || typeof over !== "object") return base;
+  const out = Array.isArray(base) ? [...base] : { ...(base || {}) };
+  Object.keys(over).forEach(k => {
+    const nv = over[k], bv = out[k];
+    if (isEmptyVal(nv)) return;                                   // keep what we had
+    if (Array.isArray(nv)) {                                      // a real list wins, but each entry
+      const bl = Array.isArray(bv) ? bv : [];                     // is completed from the matching baseline
+      out[k] = nv.map(item => {
+        if (!item || typeof item !== "object" || !item.name) return item;
+        const match = bl.find(x => x && x.name && String(x.name).toLowerCase() === String(item.name).toLowerCase());
+        return match ? mergeDNA(match, item) : item;
+      });
+      return;
+    }
+    if (nv && typeof nv === "object" && bv && typeof bv === "object" && !Array.isArray(bv)) {
+      out[k] = mergeDNA(bv, nv); return;                          // objects merge field by field
+    }
+    out[k] = nv;
+  });
+  return out;
+}
 
 function learningsBlock(learnings) {
   const on = (learnings || []).filter(l => l.active);
@@ -587,6 +628,14 @@ function buildBrandSystem(dna, learnings) {
   add("HERITAGE", p.heritage); add("CULTURAL GESTURE", p.cultural_gesture);
   add("STORY ORDER RULE", p.story_order); add("POSITIONING", p.positioning); add("POSITIONING RULE", p.positioning_rule);
   if ((p.pillars || []).length) L.push("PILLARS: " + p.pillars.map(x => `${x.name} (${x.desc})`).join(" | "));
+
+  const au = dna.audience || {};
+  if (au.target || au.market_position || au.edge || au.not_for) {
+    L.push("");
+    L.push("== AUDIENCE AND MARKET ==");
+    add("TARGET CUSTOMER", au.target); add("MARKET POSITION", au.market_position);
+    add("COMPETITIVE EDGE", au.edge); add("WHO WE ARE NOT FOR", au.not_for);
+  }
 
   L.push("");
   L.push("== COLOR SYSTEM (use these exact codes) ==");
@@ -626,7 +675,7 @@ function buildBrandSystem(dna, learnings) {
   if ((lg.marks || []).length || lg.clear_space || (lg.never || []).length) {
     L.push("");
     L.push("== LOGO SYSTEM ==");
-    (lg.marks || []).forEach(m => L.push(`- ${m.name}: ${m.use}`));
+    (lg.marks || []).forEach(m => L.push(`- ${m.name}: ${m.use}${m.file ? ` [files: ${m.file}]` : ""}`));
     add("CLEAR SPACE", lg.clear_space);
     if ((lg.never || []).length) L.push("LOGO NEVER: " + lg.never.join(" | "));
   }
@@ -985,7 +1034,7 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
         if(data && data.progress) setBookProgress(data.progress);
         if(data && data.status==="done"){
           const j = data.result || {};
-          const merged = { ...draft, ...j, logo_url: draft.logo_url, brandbook: draft.brandbook };
+          const merged = { ...mergeDNA(draft, j), logo_url: draft.logo_url, brandbook: draft.brandbook };
           setDraft(merged); setEdit(true); setBookBusy(false); setBookProgress("");
           alert("Read the whole brand book and drafted your Brand DNA, including a full guidelines reference. Review and Save.");
         } else if(data && data.status==="error"){
@@ -1002,11 +1051,32 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
     }
   }
   const d = edit ? draft : dna;
-  const ADV = ["philosophy","taglines","tagline_rule","naming","logo","illustration","photography","signage","color_rule","typography","voice","colors"];
+  const ADV = ["philosophy","audience","taglines","tagline_rule","naming","logo","illustration","photography","signage","color_rule","typography","voice","colors"];
   const advOf = (o)=>{ const x={}; ADV.forEach(k=>{ if(o[k]!==undefined) x[k]=o[k]; }); return JSON.stringify(x,null,2); };
   const [advText, setAdvText] = useState(()=>advOf(dna));
   const [advErr, setAdvErr] = useState("");
   useEffect(()=>{ if(edit) { setAdvText(advOf(draft)); setAdvErr(""); } }, [edit]);
+  // Union lists by name so nothing the founder wrote is lost, and nothing from the book stays missing.
+  function unionByName(mine, base){
+    const out = (mine||[]).slice();
+    (base||[]).forEach(b=>{
+      if(!b || !b.name) return;
+      if(!out.some(x=>x && x.name && String(x.name).toLowerCase()===String(b.name).toLowerCase())) out.push(b);
+    });
+    return out;
+  }
+  function restoreBookDefaults(){
+    const base = defaultDNA(brand);
+    let next = mergeDNA(base, draft);
+    ["colors","taglines","naming"].forEach(k=>{ next[k] = unionByName(draft[k], base[k]); });
+    next.logo = { ...next.logo, marks: unionByName((draft.logo||{}).marks, (base.logo||{}).marks) };
+    next.illustration = { ...next.illustration, items: unionByName((draft.illustration||{}).items, (base.illustration||{}).items) };
+    next.signage = { ...next.signage, elements: unionByName((draft.signage||{}).elements, (base.signage||{}).elements) };
+    next.voice = { ...next.voice, traits: unionByName((draft.voice||{}).traits, (base.voice||{}).traits) };
+    next.philosophy = { ...next.philosophy, pillars: unionByName((draft.philosophy||{}).pillars, (base.philosophy||{}).pillars) };
+    next.logo_url = draft.logo_url; next.brandbook = draft.brandbook;
+    setDraft(next); setAdvText(advOf(next)); setAdvErr("");
+  }
   function onAdv(v){
     setAdvText(v);
     try { const j = JSON.parse(v); setAdvErr(""); setDraft({ ...draft, ...j }); }
@@ -1026,7 +1096,8 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
         </div>
         <div className="spacer"></div>
         {edit
-          ? <div className="row"><button className="btn btn-ghost btn-sm" onClick={()=>{setEdit(false);setDraft(dna);}}>Cancel</button>
+          ? <div className="row"><button className="btn btn-ghost btn-sm" onClick={restoreBookDefaults} title="Add back anything from the brand book baseline that is missing here. Nothing you wrote is removed.">Fill from brand book</button>
+              <button className="btn btn-ghost btn-sm" onClick={()=>{setEdit(false);setDraft(dna);}}>Cancel</button>
               <button className="btn btn-gold btn-sm" onClick={save} disabled={busy}>{busy?"Saving":"Save DNA"}</button></div>
           : <button className="btn btn-ghost btn-sm" onClick={()=>setEdit(true)}>Edit</button>}
       </div>
@@ -1056,6 +1127,18 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
           </div>}
         </>}
       </div>
+
+      {(d.audience&&(d.audience.target||d.audience.market_position||d.audience.edge||d.audience.not_for))?
+        <div className="card">
+          <div className="card-h">Audience and market</div>
+          <div className="specgrid">
+            {[["target","Target customer"],["market_position","Market position"],["edge","Competitive edge"],["not_for","Who we are not for"]]
+              .filter(([k])=>d.audience[k])
+              .map(([k,label])=>(
+                <div className="specrow" key={k}><div className="spec-a">{label}</div><div className="spec-b"><span>{d.audience[k]}</span></div></div>
+            ))}
+          </div>
+        </div>:null}
 
       <div className="card">
         <div className="card-h">Logo</div>
@@ -1181,7 +1264,7 @@ function BrandDNA({ dna, setDna, saveDna, setLogo, setBook, brand }) {
           <div className="card-h">Logo system</div>
           <div className="specgrid">
             {(d.logo.marks||[]).map((m,i)=>(
-              <div className="specrow" key={i}><div className="spec-a">{m.name}</div><div className="spec-b"><span>{m.use}</span></div></div>
+              <div className="specrow" key={i}><div className="spec-a">{m.name}</div><div className="spec-b"><span>{m.use}</span>{m.file?<span className="mut" style={{marginTop:3}}>Files: {m.file}</span>:null}</div></div>
             ))}
           </div>
           {d.logo.clear_space&&<div className="ruleblock" style={{marginTop:12}}><b>Clear space</b> {d.logo.clear_space}</div>}
@@ -1755,7 +1838,7 @@ function App() {
 
   async function loadAll(b){
     const { data:d } = await sb.from("brand_dna").select("doc").eq("brand",b).maybeSingle();
-    if(d && d.doc && Object.keys(d.doc).length) setDna(d.doc); else setDna(defaultDNA(b));
+    setDna(mergeDNA(defaultDNA(b), (d && d.doc) || {}));
     const { data:li } = await sb.from("library_items").select("*").eq("brand",b).order("created_at",{ascending:false});
     setItems(li||[]);
     const { data:cr } = await sb.from("creations").select("*").eq("brand",b).order("created_at",{ascending:false}).limit(24);

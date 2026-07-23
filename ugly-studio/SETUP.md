@@ -142,6 +142,15 @@ Under the brief there is a Size and shape row: Square (1:1), Portrait (2:3) and 
 Each task starts on a sensible default (posters portrait, storefronts landscape, social square) and
 you can change it before directing. The director composes for the shape you picked.
 
+
+## Your saved DNA never hides a section
+Brand DNA is merged over the brand's baseline instead of replacing it. Anything you wrote or the
+brand book reader extracted always wins, and any section you have not filled in falls back to the
+baseline, so an older or partial document can never blank out a chapter. Matching entries are also
+completed, for example a color you already had picks up its Pantone and its never-use rule.
+In edit mode, Fill from brand book adds back anything missing (colors, lines, logo marks and so on)
+without removing or rewording a single thing you wrote.
+
 ## Files
 - `index.html` .............. the whole app
 - `netlify/functions/` ...... ai-text, ai-image, ai-vision, push-notify, lib/push (all zero npm deps)
